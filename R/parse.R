@@ -97,6 +97,7 @@ detect_format <- function(path, format = NULL) {
     docx = "docx",
     pdf = "pdf",
     xml = sniff_xml(path),
+    nxml = "jats",
     "text"
   )
 }
@@ -304,20 +305,27 @@ parse_endnote <- function(path) {
 parse_jats <- function(path) {
   doc <- tryCatch(xml2::read_xml(path), error = function(e) NULL)
   if (is.null(doc)) return(list())
+  res <- parse_jats_doc(doc, source_file = path)
+  if (!length(res)) return(parse_text(path))
+  res
+}
+
+#' Extract reference-list entries from a parsed JATS document.
+#' @noRd
+parse_jats_doc <- function(doc, source_file) {
   xml2::xml_ns_strip(doc)
   refs <- xml2::xml_find_all(doc, ".//ref-list//ref")
   if (!length(refs)) refs <- xml2::xml_find_all(doc, ".//ref")
-  if (!length(refs)) return(parse_text(path))
-  out <- lapply(refs, function(rf) {
+  if (!length(refs)) return(list())
+  lapply(refs, function(rf) {
     as_reference(
       doi = xml_text1(rf, ".//pub-id[@pub-id-type='doi']"),
       pmid = xml_text1(rf, ".//pub-id[@pub-id-type='pmid']"),
       title = xml_text1(rf, ".//article-title"),
       year = xml_text1(rf, ".//year"),
-      source_file = path
+      source_file = source_file
     )
   })
-  out
 }
 
 ## ---------------------------------------------------------------------------

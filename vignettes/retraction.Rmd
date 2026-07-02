@@ -62,6 +62,18 @@ retraction_example
 check_refs(retraction_example)
 ```
 
+## PubMed Central articles
+
+`check_pmc()` takes a PMID, PMCID, DOI, title, or a whole reference, resolves it
+to a PubMed Central article, reports whether the open-access full text is
+available, and if so checks that article's reference list for retractions.
+
+```{r pmc, eval = FALSE}
+res <- check_pmc(c("PMC5334499", "10.1371/journal.pone.0000217"))
+pmc_articles(res)   # open-access status per input
+retracted(res)      # retracted references found in those articles
+```
+
 ## Choosing sources
 
 The default source is Retraction Watch (`"xera"`). You can add Crossref and
