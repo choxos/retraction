@@ -19,8 +19,14 @@ against retraction data, and returns a tidy, confidence-scored report.
 * `check_dois()` checks a vector of DOIs or PMIDs directly.
 * `check_refs()` checks a data frame of references, with identifier and title
   columns auto-detected.
-* `normalize_doi()`, `normalize_pmid()`, and `normalize_title()` clean and
-  canonicalize identifiers so equivalent forms match.
+* `check_pmc()` accepts a PMID, PMCID, DOI, title, or whole reference string,
+  resolves it to a PubMed Central article, reports whether the open-access full
+  text is available, and if so checks the article's reference list for
+  retractions. `pmc_articles()` returns the per-article open-access summary, and
+  `pmc_fetch_xml()` retrieves the open-access JATS XML directly.
+* `normalize_doi()`, `normalize_pmid()`, `normalize_pmcid()`, and
+  `normalize_title()` clean and canonicalize identifiers so equivalent forms
+  match.
 
 ## Sources and reconciliation
 

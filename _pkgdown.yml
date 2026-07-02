@@ -12,6 +12,11 @@ reference:
       - check_bib
       - check_dois
       - check_refs
+  - title: PubMed Central
+    contents:
+      - check_pmc
+      - pmc_articles
+      - pmc_fetch_xml
   - title: Results and reports
     contents:
       - retracted
@@ -34,6 +39,7 @@ reference:
     contents:
       - normalize_doi
       - normalize_pmid
+      - normalize_pmcid
       - normalize_title
   - title: Data
     contents:

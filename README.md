@@ -51,6 +51,18 @@ an `is_retracted` flag, a match `confidence`, the `retraction_date`,
 `days_since_retraction`, the `reason`, and which `sources` confirmed it. Printing
 it gives a compact summary and lists the flagged citations.
 
+## PubMed Central articles
+
+Given a PMID, PMCID, DOI, title, or a whole reference, `check_pmc()` resolves it
+to a PubMed Central article, tells you whether the open-access full text is
+available, and if so checks that article's reference list for retractions.
+
+``` r
+res <- check_pmc(c("PMC5334499", "10.1371/journal.pone.0000217", "29939664"))
+pmc_articles(res)   # open-access status, reference count, and retracted count per input
+retracted(res)      # the retracted references found
+```
+
 ## Multiple sources
 
 Every `check_*()` function takes a `sources` argument. The default is `"xera"`
