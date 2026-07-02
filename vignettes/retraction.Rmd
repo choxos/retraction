@@ -1,0 +1,93 @@
+---
+title: "Getting started with retraction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with retraction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+`retraction` helps you avoid citing retracted papers. It reads documents and
+bibliographies, extracts identifiers, checks them against retraction data, and
+reports the retracted references it finds.
+
+The code chunks that reach the network are shown but not run here, so this
+article builds offline. Run them in your own session.
+
+```{r setup}
+library(retraction)
+```
+
+## Checking a file
+
+`check_file()` reads a document or bibliography and checks every reference. It
+supports BibTeX and BibLaTeX (`.bib`), CSL-JSON (`.json`), RIS (`.ris`), EndNote
+XML and JATS XML (`.xml`), Word (`.docx`), PDF (`.pdf`), and any text document
+(`.Rmd`, `.qmd`, `.tex`, `.md`, `.txt`, `.html`), from which DOIs are scraped.
+
+```{r check-file, eval = FALSE}
+bib <- system.file("extdata", "example.bib", package = "retraction")
+result <- check_file(bib)
+result
+```
+
+The result is a tibble with one row per reference. Key columns include `status`
+(retracted, expression_of_concern, correction, reinstated, none, or unchecked),
+`is_retracted` (a convenience flag), `confidence`, `retraction_date`,
+`days_since_retraction`, `reason`, and `sources`.
+
+```{r retracted, eval = FALSE}
+retracted(result)                 # just the flagged citations
+render_report(result, "report.html")
+```
+
+## Checking identifiers or a data frame
+
+```{r check-dois, eval = FALSE}
+check_dois(c("10.1016/S0140-6736(97)11096-0", "10.1038/s41586-020-2649-2"))
+```
+
+The bundled `retraction_example` data frame shows the shape `check_refs()`
+expects; columns are auto-detected.
+
+```{r example-data}
+retraction_example
+```
+
+```{r check-refs, eval = FALSE}
+check_refs(retraction_example)
+```
+
+## Choosing sources
+
+The default source is Retraction Watch (`"xera"`). You can add Crossref and
+OpenAlex, and the results are reconciled across them.
+
+```{r sources, eval = FALSE}
+list_backends()
+check_dois("10.1016/S0140-6736(97)11096-0",
+           sources = c("xera", "crossref", "openalex"))
+```
+
+## Offline mode
+
+For bulk or private checking, download a local snapshot once and match against
+it. Updates are incremental.
+
+```{r offline, eval = FALSE}
+retraction_sync()
+check_file("manuscript.Rmd", offline = TRUE)
+```
+
+## Identifier normalization
+
+The normalization helpers are exported and useful on their own.
+
+```{r normalize}
+normalize_doi("https://doi.org/10.1016/S0140-6736(97)11096-0")
+normalize_pmid("PMID: 9500320")
+```

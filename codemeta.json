@@ -1,0 +1,86 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "@id": "https://github.com/choxos/retraction",
+  "name": "retraction",
+  "description": "Scans documents, bibliographies, and reference lists for citations to retracted publications, using Retraction Watch (via the XeraRetractionTracker API), Crossref, and OpenAlex, and reports them as a tidy, confidence-scored table with an optional self-contained HTML or Markdown report.",
+  "codeRepository": "https://github.com/choxos/retraction",
+  "url": "https://choxos.github.io/retraction/",
+  "issueTracker": "https://github.com/choxos/retraction/issues",
+  "license": "https://spdx.org/licenses/GPL-3.0-only.html",
+  "version": "0.1.0",
+  "softwareVersion": "0.1.0",
+  "programmingLanguage": "R",
+  "runtimePlatform": "R >= 4.1",
+  "operatingSystem": "OS Independent",
+  "applicationCategory": "Research integrity",
+  "developmentStatus": "active",
+  "keywords": [
+    "retraction",
+    "research integrity",
+    "bibliography",
+    "citation",
+    "reproducibility",
+    "Retraction Watch",
+    "R"
+  ],
+  "softwareRequirements": [
+    "R >= 4.1",
+    "cli",
+    "httr2",
+    "jsonlite",
+    "stringdist",
+    "tibble",
+    "tools",
+    "utils",
+    "xml2"
+  ],
+  "softwareSuggestions": [
+    "covr",
+    "knitr",
+    "pdftools",
+    "RefManageR",
+    "rmarkdown",
+    "testthat",
+    "withr"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Ahmad",
+      "familyName": "Sofi-Mahmudi",
+      "email": "a.sofimahmudi@gmail.com",
+      "@id": "https://orcid.org/0000-0001-6829-0823"
+    }
+  ],
+  "contributor": [
+    {
+      "@type": "Role",
+      "roleName": [
+        "Conceptualization",
+        "Data curation",
+        "Formal analysis",
+        "Methodology",
+        "Software",
+        "Validation",
+        "Visualization",
+        "Writing - original draft",
+        "Writing - review & editing",
+        "Project administration"
+      ],
+      "url": "https://credit.niso.org/",
+      "description": "retraction has a single author; all CRediT contributor roles are attributed to Ahmad Sofi-Mahmudi.",
+      "schema:author": {
+        "@id": "https://orcid.org/0000-0001-6829-0823",
+        "name": "Ahmad Sofi-Mahmudi"
+      }
+    }
+  ],
+  "relatedLink": [
+    "https://choxos.github.io/retraction/",
+    "https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/choxos/retraction"
+  ],
+  "readme": "https://github.com/choxos/retraction/blob/main/README.md",
+  "contIntegration": "https://github.com/choxos/retraction/actions",
+  "buildInstructions": "https://github.com/choxos/retraction#installation"
+}

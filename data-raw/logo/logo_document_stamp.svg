@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 173.2 200" width="173.2" height="200">
+  <defs>
+    <style>
+      .word { font-family: Helvetica, Arial, sans-serif; font-weight: 700; }
+      .stamp { font-family: Helvetica, Arial, sans-serif; font-weight: 800; letter-spacing: 1.4px; }
+    </style>
+  </defs>
+
+  <!-- hex background and border -->
+  <polygon points="86.6,4 169.4,52 169.4,148 86.6,196 3.8,148 3.8,52"
+           fill="#FBF7F4" stroke="#B5323C" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- document shadow -->
+  <rect x="52" y="42" width="70" height="86" rx="6" fill="#00000010"/>
+  <!-- document -->
+  <rect x="50" y="40" width="70" height="86" rx="6" fill="#FFFFFF" stroke="#E8DED8" stroke-width="2"/>
+
+  <!-- text lines -->
+  <rect x="60" y="54" width="50" height="5" rx="2.5" fill="#EBE3DE"/>
+  <rect x="60" y="66" width="50" height="4" rx="2" fill="#EBE3DE"/>
+  <rect x="60" y="75" width="40" height="4" rx="2" fill="#EBE3DE"/>
+  <rect x="60" y="99" width="50" height="4" rx="2" fill="#EBE3DE"/>
+  <rect x="60" y="108" width="34" height="4" rx="2" fill="#EBE3DE"/>
+
+  <!-- RETRACTED stamp -->
+  <g transform="rotate(-20 85 88)">
+    <rect x="24" y="77" width="122" height="22" rx="2" fill="#B5323C"/>
+    <text x="85" y="92.5" class="stamp" font-size="13.5" fill="#FFFFFF"
+          text-anchor="middle">RETRACTED</text>
+  </g>
+
+  <!-- wordmark -->
+  <text x="86.6" y="151" class="word" font-size="19" fill="#B5323C"
+        text-anchor="middle">retraction</text>
+</svg>

@@ -1,0 +1,34 @@
+url: https://choxos.github.io/retraction/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#B5323C"
+
+reference:
+  - title: Check documents and bibliographies
+    contents:
+      - check_file
+      - check_bib
+      - check_dois
+      - check_refs
+  - title: Results and reports
+    contents:
+      - retracted
+      - render_report
+  - title: Sources
+    contents:
+      - list_backends
+  - title: Offline snapshot
+    contents:
+      - retraction_sync
+      - retraction_cache_dir
+      - retraction_clear_cache
+  - title: Identifiers
+    contents:
+      - normalize_doi
+      - normalize_pmid
+      - normalize_title
+  - title: Data
+    contents:
+      - retraction_example

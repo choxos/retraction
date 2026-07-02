@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+*.Rcheck/
+*.tar.gz
+docs/
+inst/doc/
+/doc/
+/Meta/
+CRAN-SUBMISSION

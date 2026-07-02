@@ -1,0 +1,104 @@
+# Thin wrappers over the remote APIs. These return lightly-parsed structures
+# (lists or data frames); adaptation to the uniform backend schema happens in
+# backends.R. All of them inherit the non-throwing behavior of the HTTP layer.
+
+## ---------------------------------------------------------------------------
+## Xera / Retraction Watch
+## ---------------------------------------------------------------------------
+
+#' Search Xera by DOI (server-side substring, case-insensitive).
+#' @return A list of item lists (possibly empty).
+#' @noRd
+xera_search_doi <- function(doi, per_page = 100L) {
+  res <- xera_get("search/advanced", list(doi = doi, per_page = per_page))
+  pluck1(res, "items") %||% list()
+}
+
+#' Fetch a full Xera record by Retraction Watch record id.
+#' @noRd
+xera_paper <- function(record_id) {
+  xera_get(paste0("papers/", utils::URLencode(as.character(record_id),
+                                              reserved = TRUE)))
+}
+
+#' Fetch the corpus year range from the filter-options endpoint.
+#' @return A list with `min` and `max`, or NULL.
+#' @noRd
+xera_year_range <- function() {
+  res <- xera_get("papers/filter-options")
+  yr <- pluck1(res, "year_range")
+  if (is.null(yr)) return(NULL)
+  list(min = as.integer(yr[["min"]] %||% NA), max = as.integer(yr[["max"]] %||% NA))
+}
+
+#' Export one slice of the papers table as a data frame (CSV backend).
+#'
+#' The export endpoint is rate-limited (20/min) and capped at 10,000 rows, so
+#' callers slice by retraction year to stay within both limits.
+#' @noRd
+xera_export_slice <- function(year_from = NULL, year_to = NULL, limit = 10000L) {
+  txt <- xera_get(
+    "export/papers",
+    list(format = "csv", limit = limit, year_from = year_from, year_to = year_to),
+    parse = "text",
+    # Steady, no-burst rate (about 15 requests/minute) to stay under the
+    # export endpoint's 20/minute cap without tripping 429 backoffs.
+    throttle = list(capacity = 1, fill_time_s = 4)
+  )
+  if (is.null(txt) || !nzchar(txt)) return(NULL)
+  out <- tryCatch(
+    utils::read.csv(text = txt, stringsAsFactors = FALSE, check.names = TRUE,
+                    colClasses = "character", na.strings = c("", "NA")),
+    error = function(e) NULL
+  )
+  out
+}
+
+## ---------------------------------------------------------------------------
+## Crossref
+## ---------------------------------------------------------------------------
+
+#' Fetch a Crossref work by DOI.
+#' @return The `message` list, or NULL.
+#' @noRd
+crossref_work <- function(doi) {
+  url <- paste0("https://api.crossref.org/works/",
+                utils::URLencode(doi, reserved = TRUE))
+  res <- http_get_json(url, query = list(mailto = retraction_mailto()))
+  pluck1(res, "message")
+}
+
+## ---------------------------------------------------------------------------
+## OpenAlex
+## ---------------------------------------------------------------------------
+
+OPENALEX_SELECT <- "id,doi,display_name,publication_year,is_retracted,ids"
+
+#' Fetch an OpenAlex work by DOI.
+#' @noRd
+openalex_by_doi <- function(doi) {
+  url <- paste0("https://api.openalex.org/works/doi:",
+                utils::URLencode(doi, reserved = TRUE))
+  http_get_json(url, query = list(select = OPENALEX_SELECT,
+                                  mailto = retraction_mailto()))
+}
+
+#' Fetch an OpenAlex work by PMID (also used to resolve PMID -> DOI).
+#' @noRd
+openalex_by_pmid <- function(pmid) {
+  url <- paste0("https://api.openalex.org/works/pmid:", utils::URLencode(pmid))
+  http_get_json(url, query = list(select = OPENALEX_SELECT,
+                                  mailto = retraction_mailto()))
+}
+
+#' Resolve a PMID to a normalized DOI via OpenAlex, or `NA`.
+#'
+#' The Xera API cannot be queried by PMID, so PMID-only references are resolved
+#' to a DOI here and then matched through the normal DOI path.
+#' @noRd
+resolve_pmid_to_doi <- function(pmid) {
+  work <- openalex_by_pmid(pmid)
+  doi <- pluck1(work, "doi")
+  if (is.null(doi)) return(NA_character_)
+  normalize_doi(doi)
+}

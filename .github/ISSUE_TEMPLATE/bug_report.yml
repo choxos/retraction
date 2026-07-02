@@ -1,0 +1,76 @@
+name: Bug report
+description: Report a reproducible problem in retraction
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Please include enough detail for the issue
+        to be reproduced without private data or credentials.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: reprex
+    attributes:
+      label: Minimal reproducible example
+      description: Include the smallest R example that shows the problem.
+      render: r
+    validations:
+      required: true
+  - type: input
+    id: input
+    attributes:
+      label: Input checked
+      description: The file format, DOI, PMID, or reference involved, if relevant.
+      placeholder: "e.g. a .bib file, a .docx manuscript, or 10.1016/..."
+  - type: dropdown
+    id: sources
+    attributes:
+      label: Sources
+      description: Which retraction sources were queried?
+      options:
+        - "xera (Retraction Watch, default)"
+        - "crossref"
+        - "openalex"
+        - "Multiple / reconciled"
+        - "Offline snapshot"
+        - "Not sure"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead? Include errors or warnings.
+    validations:
+      required: true
+  - type: textarea
+    id: session
+    attributes:
+      label: Session information
+      description: Paste `sessionInfo()` output.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I removed private data, credentials, and unpublished manuscript content.
+          required: true

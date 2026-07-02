@@ -1,0 +1,46 @@
+Package: retraction
+Title: Detect Retracted References in Documents and Bibliographies
+Version: 0.1.0
+Authors@R:
+    person("Ahmad", "Sofi-Mahmudi", email = "a.sofimahmudi@gmail.com",
+           role = c("aut", "cre"), comment = c(ORCID = "0000-0001-6829-0823"))
+Description: Scans manuscripts, bibliographies, and reference lists for
+    citations to retracted publications so that authors can avoid citing
+    retracted work. 'retraction' reads bibliographic formats (BibTeX,
+    BibLaTeX, CSL-JSON, RIS, EndNote XML) and document formats (R Markdown,
+    Quarto, 'LaTeX', Markdown, HTML, JATS XML, Word, and PDF), extracts and
+    normalizes identifiers, and checks them against retraction data. The
+    default data source is the Retraction Watch database served through the
+    'XeraRetractionTracker' API; 'Crossref' and 'OpenAlex' are available as
+    additional, reconcilable sources. Matching proceeds from exact Digital
+    Object Identifier (DOI) and 'PubMed' identifier lookups to fuzzy title
+    matching, and results are returned as a tidy, confidence-scored table
+    with an optional self-contained HTML report.
+License: GPL-3
+URL: https://github.com/choxos/retraction, https://choxos.github.io/retraction/
+BugReports: https://github.com/choxos/retraction/issues
+Depends:
+    R (>= 4.1)
+Imports:
+    cli,
+    httr2,
+    jsonlite,
+    stringdist,
+    tibble,
+    tools,
+    utils,
+    xml2
+Suggests:
+    covr,
+    knitr,
+    pdftools,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0
+LazyData: true

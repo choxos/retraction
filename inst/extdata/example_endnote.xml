@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml>
+  <records>
+    <record>
+      <rec-number>1</rec-number>
+      <ref-type name="Journal Article">17</ref-type>
+      <titles><title>Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children</title></titles>
+      <contributors><authors><author>Wakefield, A J</author></authors></contributors>
+      <dates><year>1998</year></dates>
+      <electronic-resource-num>10.1016/S0140-6736(97)11096-0</electronic-resource-num>
+    </record>
+    <record>
+      <rec-number>2</rec-number>
+      <ref-type name="Journal Article">17</ref-type>
+      <titles><title>Structure of the SARS-CoV-2 spike glycoprotein</title></titles>
+      <contributors><authors><author>Doe, Jane</author></authors></contributors>
+      <dates><year>2020</year></dates>
+      <electronic-resource-num>10.1038/s41586-020-2649-2</electronic-resource-num>
+    </record>
+  </records>
+</xml>
