@@ -1,0 +1,13 @@
+---
+title: "An example manuscript"
+---
+
+## Introduction
+
+Earlier work suggested a link between vaccination and developmental disorders
+(doi:10.1016/S0140-6736(97)11096-0), a claim that has since been discredited.
+For structural context see https://doi.org/10.1038/s41586-020-2649-2.
+
+## Methods
+
+We followed standard procedures. A further reference is 10.1126/science.aac4716.

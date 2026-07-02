@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use retraction, please cite the software repository and the version you used."
+type: software
+title: "retraction: Detect Retracted References in Documents and Bibliographies"
+version: 0.1.0
+abstract: "retraction scans manuscripts, bibliographies, and reference lists for citations to retracted publications. It reads bibliographic and document formats, normalizes identifiers, and checks them against retraction data from Retraction Watch (via the XeraRetractionTracker API), Crossref, and OpenAlex, returning a tidy, confidence-scored report."
+authors:
+  - family-names: Sofi-Mahmudi
+    given-names: Ahmad
+    email: a.sofimahmudi@gmail.com
+    orcid: "https://orcid.org/0000-0001-6829-0823"
+repository-code: "https://github.com/choxos/retraction"
+url: "https://choxos.github.io/retraction/"
+license: GPL-3.0-only
+keywords:
+  - retraction
+  - research integrity
+  - bibliography
+  - citation
+  - reproducibility
+  - Retraction Watch

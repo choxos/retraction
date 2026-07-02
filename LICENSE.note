@@ -1,0 +1,30 @@
+retraction: third-party services and data provenance
+=====================================================
+
+The 'retraction' R package is licensed under GPL-3 (see the LICENSE file).
+It queries external services and data sources at run time. The package code
+is independent of these services; the notes below describe the terms that
+govern the data they return, which users are responsible for observing.
+
+XeraRetractionTracker (default source)
+--------------------------------------
+Base URL: https://openscience.xera.ac/retractions/api/v1/
+Serves the Retraction Watch database. No authentication is required for read
+access. Retraction Watch data is made openly available by The Center for
+Scientific Integrity through Crossref
+(https://gitlab.com/crossref/retraction-watch-data). Users who redistribute
+bulk downloads should review the current Retraction Watch and Crossref terms.
+
+Crossref (optional source)
+--------------------------
+Base URL: https://api.crossref.org/
+Crossref metadata is openly available. The package sends an optional "mailto"
+value to use the polite request pool, as Crossref recommends.
+
+OpenAlex (optional source)
+--------------------------
+Base URL: https://api.openalex.org/
+The OpenAlex dataset is released under CC0. The "is_retracted" flag it exposes
+is derived from the Retraction Watch database.
+
+No third-party code is bundled in this package.

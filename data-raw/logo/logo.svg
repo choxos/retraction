@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 173.2 200" width="173.2" height="200">
+  <defs>
+    <style>.word { font-family: "Futura", "Avenir Next", sans-serif; font-weight: 600; }</style>
+    <clipPath id="hex"><polygon points="86.6,7 166.4,53.5 166.4,146.5 86.6,193 6.8,146.5 6.8,53.5"/></clipPath>
+  </defs>
+
+  <polygon points="86.6,4 169.4,52 169.4,148 86.6,196 3.8,148 3.8,52"
+           fill="#FBF7F4" stroke="#B5323C" stroke-width="6" stroke-linejoin="round"/>
+
+  <g clip-path="url(#hex)">
+    <image xlink:href="/Users/choxos/Documents/GitHub/retraction/data-raw/logo/retractor.png"
+           x="11.6" y="31.7" width="150" height="96.6"
+           transform="rotate(-20 86.6 80)"/>
+  </g>
+
+  <text x="86.6" y="158" class="word" font-size="18" letter-spacing="0.4"
+        fill="#B5323C" text-anchor="middle">retraction</text>
+</svg>

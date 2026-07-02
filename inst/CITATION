@@ -1,0 +1,13 @@
+citHeader("To cite retraction in publications, please use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "retraction: Detect Retracted References in Documents and Bibliographies",
+  author = person("Ahmad", "Sofi-Mahmudi",
+                  email = "a.sofimahmudi@gmail.com",
+                  comment = c(ORCID = "0000-0001-6829-0823")),
+  year = format(Sys.Date(), "%Y"),
+  version = meta$Version,
+  url = "https://github.com/choxos/retraction",
+  note = paste("R package version", meta$Version)
+)

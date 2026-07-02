@@ -1,0 +1,28 @@
+{
+  "title": "retraction: Detect Retracted References in Documents and Bibliographies",
+  "description": "retraction scans manuscripts, bibliographies, and reference lists for citations to retracted publications. It reads bibliographic and document formats, normalizes identifiers, and checks them against retraction data from Retraction Watch (via the XeraRetractionTracker API), Crossref, and OpenAlex, returning a tidy, confidence-scored report with an optional self-contained HTML report.",
+  "upload_type": "software",
+  "license": "GPL-3.0-only",
+  "creators": [
+    {
+      "name": "Sofi-Mahmudi, Ahmad",
+      "orcid": "0000-0001-6829-0823"
+    }
+  ],
+  "keywords": [
+    "retraction",
+    "research integrity",
+    "bibliography",
+    "citation",
+    "reproducibility",
+    "Retraction Watch",
+    "R"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/choxos/retraction",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
