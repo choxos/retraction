@@ -1,0 +1,593 @@
+{
+    "version": "6.9",
+    "hitCount": 1,
+    "request": {
+        "queryString": "DOI:\"10.1016/s0140-6736(97)11096-0\"",
+        "resultType": "core",
+        "cursorMark": "*",
+        "pageSize": 5,
+        "sort": "",
+        "synonym": false
+    },
+    "resultList": {
+        "result": [
+            {
+                "id": "9500320",
+                "source": "MED",
+                "pmid": "9500320",
+                "doi": "10.1016/s0140-6736(97)11096-0",
+                "title": "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children.",
+                "authorString": "Wakefield AJ, Murch SH, Anthony A, Linnell J, Casson DM, Malik M, Berelowitz M, Dhillon AP, Thomson MA, Harvey P, Valentine A, Davies SE, Walker-Smith JA.",
+                "authorList": {
+                    "author": [
+                        {
+                            "fullName": "Wakefield AJ",
+                            "firstName": "A J",
+                            "lastName": "Wakefield",
+                            "initials": "AJ",
+                            "authorAffiliationDetailsList": {
+                                "authorAffiliation": [
+                                    {
+                                        "affiliation": "Inflammatory Bowel Disease Study Group, University Department of Medicine, Royal Free Hospital and School of Medicine, London, UK."
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "fullName": "Murch SH",
+                            "firstName": "S H",
+                            "lastName": "Murch",
+                            "initials": "SH"
+                        },
+                        {
+                            "fullName": "Anthony A",
+                            "firstName": "A",
+                            "lastName": "Anthony",
+                            "initials": "A"
+                        },
+                        {
+                            "fullName": "Linnell J",
+                            "firstName": "J",
+                            "lastName": "Linnell",
+                            "initials": "J"
+                        },
+                        {
+                            "fullName": "Casson DM",
+                            "firstName": "D M",
+                            "lastName": "Casson",
+                            "initials": "DM"
+                        },
+                        {
+                            "fullName": "Malik M",
+                            "firstName": "M",
+                            "lastName": "Malik",
+                            "initials": "M"
+                        },
+                        {
+                            "fullName": "Berelowitz M",
+                            "firstName": "M",
+                            "lastName": "Berelowitz",
+                            "initials": "M"
+                        },
+                        {
+                            "fullName": "Dhillon AP",
+                            "firstName": "A P",
+                            "lastName": "Dhillon",
+                            "initials": "AP"
+                        },
+                        {
+                            "fullName": "Thomson MA",
+                            "firstName": "M A",
+                            "lastName": "Thomson",
+                            "initials": "MA"
+                        },
+                        {
+                            "fullName": "Harvey P",
+                            "firstName": "P",
+                            "lastName": "Harvey",
+                            "initials": "P"
+                        },
+                        {
+                            "fullName": "Valentine A",
+                            "firstName": "A",
+                            "lastName": "Valentine",
+                            "initials": "A"
+                        },
+                        {
+                            "fullName": "Davies SE",
+                            "firstName": "S E",
+                            "lastName": "Davies",
+                            "initials": "SE"
+                        },
+                        {
+                            "fullName": "Walker-Smith JA",
+                            "firstName": "J A",
+                            "lastName": "Walker-Smith",
+                            "initials": "JA"
+                        }
+                    ]
+                },
+                "dataLinksTagsList": {
+                    "dataLinkstag": [
+                        "altmetrics",
+                        "wikipedia"
+                    ]
+                },
+                "journalInfo": {
+                    "issue": "9103",
+                    "volume": "351",
+                    "journalIssueId": 1194087,
+                    "dateOfPublication": "1998 Feb",
+                    "monthOfPublication": 2,
+                    "yearOfPublication": 1998,
+                    "printPublicationDate": "1998-02-01",
+                    "journal": {
+                        "title": "Lancet (London, England)",
+                        "medlineAbbreviation": "Lancet",
+                        "issn": "0140-6736",
+                        "nlmid": "2985213R",
+                        "isoabbreviation": "Lancet",
+                        "essn": "1474-547X"
+                    }
+                },
+                "pubYear": "1998",
+                "pageInfo": "637-641",
+                "abstractText": "<h4>Background<\/h4>We investigated a consecutive series of children with chronic enterocolitis and regressive developmental disorder.<h4>Methods<\/h4>12 children (mean age 6 years [range 3-10], 11 boys) were referred to a paediatric gastroenterology unit with a history of normal development followed by loss of acquired skills, including language, together with diarrhoea and abdominal pain. Children underwent gastroenterological, neurological, and developmental assessment and review of developmental records. Ileocolonoscopy and biopsy sampling, magnetic-resonance imaging (MRI), electroencephalography (EEG), and lumbar puncture were done under sedation. Barium follow-through radiography was done where possible. Biochemical, haematological, and immunological profiles were examined.<h4>Findings<\/h4>Onset of behavioural symptoms was associated, by the parents, with measles, mumps, and rubella vaccination in eight of the 12 children, with measles infection in one child, and otitis media in another. All 12 children had intestinal abnormalities, ranging from lymphoid nodular hyperplasia to aphthoid ulceration. Histology showed patchy chronic inflammation in the colon in 11 children and reactive ileal lymphoid hyperplasia in seven, but no granulomas. Behavioural disorders included autism (nine), disintegrative psychosis (one), and possible postviral or vaccinal encephalitis (two). There were no focal neurological abnormalities and MRI and EEG tests were normal. Abnormal laboratory results were significantly raised urinary methylmalonic acid compared with age-matched controls (p=0.003), low haemoglobin in four children, and a low serum IgA in four children.<h4>Interpretation<\/h4>We identified associated gastrointestinal disease and developmental regression in a group of previously normal children, which was generally associated in time with possible environmental triggers.",
+                "affiliation": "Inflammatory Bowel Disease Study Group, University Department of Medicine, Royal Free Hospital and School of Medicine, London, UK.",
+                "publicationStatus": "ppublish",
+                "language": "eng",
+                "pubModel": "Print",
+                "pubTypeList": {
+                    "pubType": [
+                        "Retracted Publication",
+                        "Research Support, Non-U.S. Gov't",
+                        "Journal Article"
+                    ]
+                },
+                "meshHeadingList": {
+                    "meshHeading": [
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Ileum",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "PA",
+                                        "qualifierName": "pathology",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Lymphoid Tissue",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "PA",
+                                        "qualifierName": "pathology",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Humans"
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Measles",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "CO",
+                                        "qualifierName": "complications",
+                                        "majorTopic_YN": "N"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Enterocolitis",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "ET",
+                                        "qualifierName": "etiology",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Otitis Media",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "CO",
+                                        "qualifierName": "complications",
+                                        "majorTopic_YN": "N"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Hyperplasia",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "PA",
+                                        "qualifierName": "pathology",
+                                        "majorTopic_YN": "N"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Vaccines, Combined",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "AE",
+                                        "qualifierName": "adverse effects",
+                                        "majorTopic_YN": "N"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Measles-Mumps-Rubella Vaccine"
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Measles Vaccine",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "AE",
+                                        "qualifierName": "adverse effects",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Mumps Vaccine",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "AE",
+                                        "qualifierName": "adverse effects",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Rubella Vaccine",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "AE",
+                                        "qualifierName": "adverse effects",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Developmental Disabilities",
+                            "meshQualifierList": {
+                                "meshQualifier": [
+                                    {
+                                        "abbreviation": "ET",
+                                        "qualifierName": "etiology",
+                                        "majorTopic_YN": "Y"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Child"
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Child, Preschool"
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Female"
+                        },
+                        {
+                            "majorTopic_YN": "N",
+                            "descriptorName": "Male"
+                        }
+                    ]
+                },
+                "chemicalList": {
+                    "chemical": [
+                        {
+                            "name": "Measles Vaccine",
+                            "registryNumber": "0"
+                        },
+                        {
+                            "name": "Rubella Vaccine",
+                            "registryNumber": "0"
+                        },
+                        {
+                            "name": "Mumps Vaccine",
+                            "registryNumber": "0"
+                        },
+                        {
+                            "name": "Vaccines, Combined",
+                            "registryNumber": "0"
+                        },
+                        {
+                            "name": "Measles-Mumps-Rubella Vaccine",
+                            "registryNumber": "0"
+                        }
+                    ]
+                },
+                "subsetList": {
+                    "subset": [
+                        {
+                            "code": "IM",
+                            "name": "Index Medicus"
+                        }
+                    ]
+                },
+                "fullTextUrlList": {
+                    "fullTextUrl": [
+                        {
+                            "availability": "Subscription required",
+                            "availabilityCode": "S",
+                            "documentStyle": "doi",
+                            "site": "DOI",
+                            "url": "https://doi.org/10.1016/s0140-6736(97)11096-0"
+                        }
+                    ]
+                },
+                "commentCorrectionList": {
+                    "commentCorrection": [
+                        {
+                            "id": "9500313",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Feb 28;351(9103):611-2. doi: 10.1016/S0140-6736(05)78423-3",
+                            "type": "Comment in",
+                            "orderIn": 1
+                        },
+                        {
+                            "id": "9525390",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):905; author reply 908-9.",
+                            "type": "Comment in",
+                            "orderIn": 2
+                        },
+                        {
+                            "id": "9525391",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):905-6; author reply 908-9. doi: 10.1016/S0140-6736(05)70316-0",
+                            "type": "Comment in",
+                            "orderIn": 3
+                        },
+                        {
+                            "id": "9525392",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):906; author reply 908-9. doi: 10.1016/s0140-6736(05)70317-2",
+                            "type": "Comment in",
+                            "orderIn": 4
+                        },
+                        {
+                            "id": "9525393",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):906-7; author reply 908-9. doi: 10.1016/S0140-6736(05)70318-4",
+                            "type": "Comment in",
+                            "orderIn": 5
+                        },
+                        {
+                            "id": "9525394",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):907; author reply 908-9. doi: 10.1016/S0140-6736(05)70319-6",
+                            "type": "Comment in",
+                            "orderIn": 6
+                        },
+                        {
+                            "id": "9525395",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):907; author reply 908-9. doi: 10.1016/S0140-6736(05)70320-2",
+                            "type": "Comment in",
+                            "orderIn": 7
+                        },
+                        {
+                            "id": "9525396",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Mar 21;351(9106):907-8; author reply 908-9. doi: 10.1016/S0140-6736(05)70321-4",
+                            "type": "Comment in",
+                            "orderIn": 8
+                        },
+                        {
+                            "id": "9643815",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1355; author reply 1356.",
+                            "type": "Comment in",
+                            "orderIn": 9
+                        },
+                        {
+                            "id": "9643816",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1355; author reply 1356. doi: 10.1016/S0140-6736(05)79080-2",
+                            "type": "Comment in",
+                            "orderIn": 10
+                        },
+                        {
+                            "id": "9643817",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1355-6; author reply 1356. doi: 10.1016/S0140-6736(05)79081-4",
+                            "type": "Comment in",
+                            "orderIn": 11
+                        },
+                        {
+                            "id": "9643818",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1356. doi: 10.1016/S0140-6736(05)79082-6",
+                            "type": "Comment in",
+                            "orderIn": 12
+                        },
+                        {
+                            "id": "9643820",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1357. doi: 10.1016/S0140-6736(05)79085-1",
+                            "type": "Comment in",
+                            "orderIn": 13
+                        },
+                        {
+                            "id": "9643821",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1357. doi: 10.1016/s0140-6736(05)79087-5",
+                            "type": "Comment in",
+                            "orderIn": 14
+                        },
+                        {
+                            "id": "9643822",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1357-8. doi: 10.1016/S0140-6736(05)79088-7",
+                            "type": "Comment in",
+                            "orderIn": 15
+                        },
+                        {
+                            "id": "9643823",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 May 2;351(9112):1358. doi: 10.1016/s0140-6736(05)79089-9",
+                            "type": "Comment in",
+                            "orderIn": 16
+                        },
+                        {
+                            "id": "9683237",
+                            "source": "MED",
+                            "reference": "Lancet. 1998 Jul 18;352(9123):234-5. doi: 10.1016/S0140-6736(05)77837-5",
+                            "type": "Comment in",
+                            "orderIn": 17
+                        },
+                        {
+                            "id": "10963264",
+                            "source": "MED",
+                            "reference": "Lancet. 2000 Jul 8;356(9224):160-1. doi: 10.1016/s0140-6736(05)73169-x",
+                            "type": "Comment in",
+                            "orderIn": 18
+                        },
+                        {
+                            "id": "10963266",
+                            "source": "MED",
+                            "reference": "Lancet. 2000 Jul 8;356(9224):161. doi: 10.1016/S0140-6736(05)73171-8",
+                            "type": "Comment in",
+                            "orderIn": 19
+                        },
+                        {
+                            "id": "10963267",
+                            "source": "MED",
+                            "reference": "Lancet. 2000 Jul 8;356(9224):161-2. doi: 10.1016/S0140-6736(05)73172-X",
+                            "type": "Comment in",
+                            "orderIn": 20
+                        },
+                        {
+                            "id": "12086756",
+                            "source": "MED",
+                            "reference": "Lancet. 2002 Jun 15;359(9323):2051-2. doi: 10.1016/S0140-6736(02)08948-1",
+                            "type": "Comment in",
+                            "orderIn": 21
+                        },
+                        {
+                            "id": "15016482",
+                            "source": "MED",
+                            "reference": "Lancet. 2004 Mar 6;363(9411):747-9. doi: 10.1016/S0140-6736(04)15714-0",
+                            "type": "Comment in",
+                            "orderIn": 22
+                        },
+                        {
+                            "id": "15016483",
+                            "source": "MED",
+                            "reference": "Lancet. 2004 Mar 6;363(9411):750. doi: 10.1016/S0140-6736(04)15715-2",
+                            "type": "Retraction in",
+                            "orderIn": 23
+                        },
+                        {
+                            "id": "15022645",
+                            "source": "MED",
+                            "reference": "Lancet. 2004 Mar 6;363(9411):820-1. doi: 10.1016/S0140-6736(04)15699-7",
+                            "type": "Comment in",
+                            "orderIn": 24
+                        },
+                        {
+                            "id": "15022648",
+                            "source": "MED",
+                            "reference": "Lancet. 2004 Mar 6;363(9411):821-2. doi: 10.1016/s0140-6736(04)15708-5",
+                            "type": "Comment in",
+                            "orderIn": 25
+                        },
+                        {
+                            "id": "15022649",
+                            "source": "MED",
+                            "reference": "Lancet. 2004 Mar 6;363(9411):822-3. doi: 10.1016/S0140-6736(04)15709-7",
+                            "type": "Comment in",
+                            "orderIn": 26
+                        },
+                        {
+                            "id": "15022650",
+                            "source": "MED",
+                            "reference": "Lancet. 2004 Mar 6;363(9411):823-4. doi: 10.1016/S0140-6736(04)15710-3",
+                            "type": "Comment in",
+                            "orderIn": 27
+                        },
+                        {
+                            "id": "20137807",
+                            "source": "MED",
+                            "reference": "Lancet. 2010 Feb 6;375(9713):445. doi: 10.1016/S0140-6736(10)60175-4",
+                            "type": "Retraction in",
+                            "orderIn": 28
+                        },
+                        {
+                            "id": "21971344",
+                            "source": "MED",
+                            "reference": "Eur J Gastroenterol Hepatol. 2011 Nov;23(11):1082. doi: 10.1097/MEG.0b013e328349d184",
+                            "type": "Expression of concern in",
+                            "orderIn": 29
+                        }
+                    ]
+                },
+                "isOpenAccess": "N",
+                "inEPMC": "N",
+                "inPMC": "N",
+                "hasPDF": "N",
+                "hasBook": "N",
+                "hasSuppl": "N",
+                "citedByCount": 1170,
+                "hasData": "N",
+                "hasReferences": "Y",
+                "hasTextMinedTerms": "Y",
+                "hasDbCrossReferences": "N",
+                "hasLabsLinks": "Y",
+                "hasEvaluations": "N",
+                "authMan": "N",
+                "epmcAuthMan": "N",
+                "nihAuthMan": "N",
+                "hasTMAccessionNumbers": "N",
+                "dateOfCompletion": "1998-03-17",
+                "dateOfCreation": "1998-03-21",
+                "firstIndexDate": "2010-03-09",
+                "dateOfRevision": "2024-08-15",
+                "firstPublicationDate": "1998-02-01"
+            }
+        ]
+    }
+}

@@ -7,4 +7,9 @@ linters: linters_with_defaults(
     commented_code_linter = NULL
   )
 encoding: "UTF-8"
-exclusions: list("tests/testthat.R", "data-raw")
+exclusions: list("tests/testthat.R", "data-raw",
+    "tests/testthat/mock-xera-doi", "tests/testthat/mock-xera-pmid",
+    "tests/testthat/mock-crossref", "tests/testthat/mock-openalex",
+    "tests/testthat/mock-europepmc", "tests/testthat/mock-ncbi",
+    "tests/testthat/mock-datacite", "tests/testthat/mock-preprint",
+    "tests/testthat/mock-pmc")

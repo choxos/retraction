@@ -302,3 +302,22 @@ test_that("manuscript_date_of falls back to file mtime", {
   f <- tempfile(); writeLines("x", f)
   expect_s3_class(manuscript_date_of(f), "Date")
 })
+
+test_that("annotate_bib is idempotent even with a @string block present", {
+  bib <- tempfile(fileext = ".bib")
+  writeLines(c("@article{key1,", "  title = {A paper},", "  doi = {10.1234/x}", "}",
+               "@string{jan = {January}}",
+               "@article{key2,", "  title = {Clean}", "}"), bib)
+  x <- res(row(id = "key1", doi = "10.1234/x", matched = TRUE, is_retracted = TRUE,
+               status = "retracted", reason = "Fabrication"))
+  out <- tempfile(fileext = ".bib")
+  annotate_bib(bib, x, out)
+  annotate_bib(out, x, out)
+  expect_equal(sum(grepl("RETRACTED", readLines(out))), 1L)
+})
+
+test_that("watch_key is stable for a title-only reference across formatting", {
+  a <- res(row(id = "The  Study Of Things", doi = NA_character_, pmid = NA_character_))
+  b <- res(row(id = "the study of things", doi = NA_character_, pmid = NA_character_))
+  expect_equal(watch_key(a), watch_key(b))
+})

@@ -32,7 +32,7 @@ badge_json <- function(x, path = "retraction-badge.json") {
 #' Report the local snapshot's data version and freshness
 #'
 #' Which retraction-database version an offline check runs against, for
-#' reproducible audits.
+#' reproducible checks.
 #'
 #' @return Invisibly, a list with `path`, `records`, `synced_at`, and
 #'   `newest_retraction`; or `NULL` if no snapshot exists. Also prints a summary.
@@ -56,7 +56,7 @@ snapshot_info <- function() {
     newest_retraction = if (is.finite(newest)) newest else as.Date(NA)
   )
   synced_txt <- if (is.na(info$synced_at)) "unknown" else format(as.Date(info$synced_at))
-  newest_txt <- format(info$newest_retraction)
+  newest_txt <- if (is.na(info$newest_retraction)) "unknown" else format(info$newest_retraction)
   cli::cli_alert_info(
     "Snapshot: {info$records} records; newest {newest_txt}; synced {synced_txt}."
   )

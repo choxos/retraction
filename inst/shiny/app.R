@@ -56,10 +56,10 @@ server <- function(input, output, session) {
     cols <- intersect(c("id", "doi", "pmid", "status", "is_retracted", "confidence",
                         "matched_title", "journal", "retraction_date", "reason",
                         "sources"), names(df))
-    DT::datatable(df[, cols, drop = FALSE], rownames = FALSE,
-                  options = list(pageLength = 25, scrollX = TRUE)) |>
-      DT::formatStyle("is_retracted", target = "row",
-                      backgroundColor = DT::styleEqual(TRUE, "#fdecea"))
+    dt <- DT::datatable(df[, cols, drop = FALSE], rownames = FALSE,
+                        options = list(pageLength = 25, scrollX = TRUE))
+    DT::formatStyle(dt, "is_retracted", target = "row",
+                    backgroundColor = DT::styleEqual(TRUE, "#fdecea"))
   })
 
   output$dl <- shiny::downloadHandler(

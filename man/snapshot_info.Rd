@@ -12,7 +12,7 @@ Invisibly, a list with \code{path}, \code{records}, \code{synced_at}, and
 }
 \description{
 Which retraction-database version an offline check runs against, for
-reproducible audits.
+reproducible checks.
 }
 \examples{
 \dontrun{
