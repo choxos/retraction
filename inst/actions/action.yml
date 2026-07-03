@@ -1,0 +1,54 @@
+# Composite GitHub Action: fail CI when a manuscript cites retracted work.
+# Copy into your repo (e.g. .github/actions/retraction/action.yml) or adapt the
+# run step. Fails closed on scan errors per the fail policy.
+name: 'Retraction check'
+description: 'Scan a manuscript or bibliography for citations to retracted work and fail per policy.'
+inputs:
+  paths:
+    description: 'Newline-delimited files to scan (one path per line; handles spaces).'
+    required: true
+    default: 'paper.bib'
+  install:
+    description: 'How to install the package: "released" (CRAN) or "dev" (the current checkout).'
+    required: false
+    default: 'released'
+  fail-on:
+    description: 'Comma-separated states that fail the build: flagged,possible,unchecked,error.'
+    required: false
+    default: 'flagged,error'
+runs:
+  using: 'composite'
+  steps:
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        use-public-rspm: true
+    - name: Install retraction (released)
+      if: inputs.install == 'released'
+      shell: Rscript {0}
+      run: install.packages("retraction")
+    - name: Install retraction (current checkout)
+      if: inputs.install == 'dev'
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        extra-packages: local::.
+    - name: Scan for retracted citations
+      shell: Rscript {0}
+      run: |
+        # Newline-delimited paths, so filenames with spaces are preserved.
+        paths <- strsplit(Sys.getenv("RETRACTION_PATHS"), "\n", fixed = TRUE)[[1]]
+        paths <- trimws(paths); paths <- paths[nzchar(paths)]
+        on <- strsplit(Sys.getenv("RETRACTION_FAIL_ON"), ",", fixed = TRUE)[[1]]
+        policy <- retraction::fail_policy(trimws(on))
+        # Fails closed: retraction_scan() errors on a missing file by default.
+        scan <- retraction::retraction_scan(paths)
+        print(scan$result)
+        verdict <- retraction:::evaluate_policy(scan$result, policy, scan$n_errors)
+        for (f in names(scan$errors)) cat(sprintf("::error file=%s::%s\n", f, scan$errors[[f]]))
+        if (verdict$fail) {
+          cat(sprintf("::error::retraction gate triggered: %s\n",
+                      paste(verdict$triggered, collapse = "; ")))
+          quit(status = 1L)
+        }
+      env:
+        RETRACTION_PATHS: ${{ inputs.paths }}
+        RETRACTION_FAIL_ON: ${{ inputs.fail-on }}

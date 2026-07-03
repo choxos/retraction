@@ -21,10 +21,42 @@ reference:
     contents:
       - retracted
       - render_report
+  - title: Interpreting results
+    contents:
+      - explain_result
+      - compare_sources
+      - exposure_score
+      - classify_timing
+      - manuscript_date_of
+      - snapshot_info
+      - badge_json
+  - title: Monitoring and systematic reviews
+    contents:
+      - retraction_watch_save
+      - retraction_watch_diff
+      - check_included_studies
+  - title: Workflow integration
+    contents:
+      - retraction_scan
+      - retraction_main
+      - retraction_knit_check
+      - retraction_addin_check_active
+      - fail_policy
+  - title: Export, annotation, and queries
+    contents:
+      - export_result
+      - annotate_bib
+      - suggest_alternatives
+      - author_retractions
+      - journal_retractions
+      - primary_reason_bucket
+      - reason_buckets
+      - reason_summary
   - title: The retraction_result object
     contents:
       - print.retraction_result
       - summary.retraction_result
+      - print.retraction_review
       - as_tibble.retraction_result
       - as.data.frame.retraction_result
   - title: Sources

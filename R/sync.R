@@ -29,12 +29,17 @@ add_norm_columns <- function(snap) {
   snap$norm_odoi <- normalize_doi(snap$original_paper_doi %||% rep(NA_character_, n))
   snap$norm_rdoi <- normalize_doi(snap$retraction_doi %||% rep(NA_character_, n))
   snap$norm_title <- normalize_title(snap$title %||% rep(NA_character_, n))
+  # PMID columns are present in snapshots exported after PMID support was added;
+  # older snapshots lack them and get all-NA (offline PMID matching then no-ops).
+  snap$norm_opmid <- normalize_pmid(snap$original_paper_pubmed_id %||% rep(NA_character_, n))
+  snap$norm_rpmid <- normalize_pmid(snap$retraction_pubmed_id %||% rep(NA_character_, n))
   snap
 }
 
 #' @noRd
 strip_norm_columns <- function(snap) {
-  snap[, setdiff(names(snap), c("norm_odoi", "norm_rdoi", "norm_title")),
+  snap[, setdiff(names(snap), c("norm_odoi", "norm_rdoi", "norm_title",
+                                "norm_opmid", "norm_rpmid")),
        drop = FALSE]
 }
 
@@ -190,7 +195,9 @@ load_snapshot <- function(reload = FALSE) {
   path <- snapshot_path()
   if (!file.exists(path)) return(NULL)
   snap <- tryCatch(readRDS(path), error = function(e) NULL)
-  if (!is.null(snap) && is.null(snap$norm_odoi)) snap <- add_norm_columns(snap)
+  if (!is.null(snap) && (is.null(snap$norm_odoi) || is.null(snap$norm_opmid))) {
+    snap <- add_norm_columns(snap)
+  }
   .snapshot_cache$data <- snap
   snap
 }
@@ -295,6 +302,24 @@ snapshot_hit <- function(snap, ref, ctx) {
     return(NULL)
   }
 
+  # Offline PMID match (snapshots exported after PMID support carry the columns).
+  if (is_nonempty_string(ref$pmid) && !is.null(snap$norm_opmid)) {
+    idx <- which(snap$norm_opmid == ref$pmid)
+    if (length(idx)) {
+      items <- lapply(idx, function(i) snap_row_to_item(snap[i, ]))
+      return(build_xera_hit(pick_governing(items), matched_on = "pmid",
+                            match_type = "pmid_exact"))
+    }
+    idx <- which(snap$norm_rpmid == ref$pmid)
+    if (length(idx)) {
+      hit <- build_xera_hit(snap_row_to_item(snap[idx[1L], ]),
+                            matched_on = "retraction_doi", match_type = "pmid_exact",
+                            status_override = "none")
+      hit$evidence <- "cited_retraction_notice"
+      return(hit)
+    }
+  }
+
   if (isTRUE(ctx$allow_fuzzy) && is_nonempty_string(ref$title)) {
     rt <- normalize_title(ref$title)
     sims <- title_similarity(rt, snap$norm_title)
@@ -303,10 +328,11 @@ snapshot_hit <- function(snap, ref, ctx) {
       it <- snap_row_to_item(snap[best, ])
       yd <- year_delta(ref$year, year_of(it$original_paper_date))
       ao <- author_overlap(ref$author, it$author)
-      conf <- score_match("title_fuzzy", title_sim = sims[best],
-                          year_delta = yd, author_overlap = ao)
-      return(build_xera_hit(it, matched_on = "title", match_type = "title_fuzzy",
-                            confidence = conf, evidence = "title_fuzzy"))
+      mt <- if (is_exact_metadata(sims[best], ref, it)) "title_exact" else "title_fuzzy"
+      conf <- score_match(mt, title_sim = sims[best], year_delta = yd,
+                          author_overlap = ao)
+      return(build_xera_hit(it, matched_on = "title", match_type = mt,
+                            confidence = conf, evidence = mt))
     }
   }
   NULL

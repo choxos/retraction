@@ -50,6 +50,29 @@ author_overlap <- function(a, b) {
   length(intersect(family_tokens(a), family_tokens(b)))
 }
 
+#' Do two author strings share a first (leading) family token?
+#' @noRd
+first_author_matches <- function(a, b) {
+  fa <- family_tokens(a); fb <- family_tokens(b)
+  length(fa) > 0 && length(fb) > 0 && identical(fa[[1L]], fb[[1L]])
+}
+
+#' Is a no-identifier title match strong enough to assert (title_exact)?
+#'
+#' Requires a near-perfect title, the exact year, and a shared first author.
+#' Short/generic titles are the main false-positive risk, so a title with fewer
+#' than five distinctive tokens additionally requires two shared author tokens.
+#' @noRd
+is_exact_metadata <- function(title_sim, ref, it) {
+  auth <- na_if_empty(pluck1(it, "author"))
+  n_tokens <- length(strsplit(normalize_title(ref$title %||% ""), " ")[[1L]])
+  min_authors <- if (n_tokens < 5L) 2L else 1L
+  isTRUE(title_sim >= 0.985) &&
+    year_delta(ref$year, year_of(pluck1(it, "original_paper_date"))) %in% 0 &&
+    author_overlap(ref$author, auth) >= min_authors &&
+    first_author_matches(ref$author, auth)
+}
+
 #' Build a fuzzy Xera hit from the best-matching item, or NULL if below
 #' threshold.
 #' @noRd
@@ -67,10 +90,11 @@ fuzzy_hit_from_items <- function(items, ref) {
   it <- items[[best]]
   yd <- year_delta(ref$year, year_of(pluck1(it, "original_paper_date")))
   ao <- author_overlap(ref$author, na_if_empty(pluck1(it, "author")))
-  conf <- score_match("title_fuzzy", title_sim = sims[best],
-                      year_delta = yd, author_overlap = ao)
-  build_xera_hit(it, matched_on = "title", match_type = "title_fuzzy",
-                 confidence = conf, evidence = "title_fuzzy")
+  mt <- if (is_exact_metadata(sims[best], ref, it)) "title_exact" else "title_fuzzy"
+  conf <- score_match(mt, title_sim = sims[best], year_delta = yd,
+                      author_overlap = ao)
+  build_xera_hit(it, matched_on = "title", match_type = mt,
+                 confidence = conf, evidence = mt)
 }
 
 ## ---------------------------------------------------------------------------
@@ -87,11 +111,16 @@ fuzzy_hit_from_items <- function(items, ref) {
 match_reference <- function(ref, sources, ctx) {
   doi_from_pmid <- FALSE
 
-  # A PMID with no DOI is resolved to a DOI (via OpenAlex) and then matched
-  # through the normal DOI path, since the Xera API cannot be queried by PMID.
+  # A PMID with no DOI is resolved to a DOI and then matched through the normal
+  # DOI path. The Xera corpus is queried by PMID first (authoritative, since it
+  # is the Retraction Watch data); OpenAlex is only a fallback to obtain a DOI
+  # for the other DOI-only sources when Xera has no record for the PMID.
   if (!is_nonempty_string(ref$doi) && is_nonempty_string(ref$pmid) &&
-      !isTRUE(ctx$offline) && isTRUE(ctx$resolve_ids)) {
-    rd <- resolve_pmid_to_doi(ref$pmid)
+      !isTRUE(ctx$offline)) {
+    rd <- xera_pmid_to_doi(ref$pmid)
+    if (!is_nonempty_string(rd) && isTRUE(ctx$resolve_ids)) {
+      rd <- resolve_pmid_to_doi(ref$pmid)
+    }
     if (is_nonempty_string(rd)) {
       ref$doi <- rd
       doi_from_pmid <- TRUE

@@ -57,7 +57,7 @@ detect_col <- function(names, candidates) {
 #' Shared checking engine.
 #' @noRd
 run_checks <- function(refs, sources, offline, flag_nature, allow_fuzzy,
-                       resolve_ids, progress = TRUE) {
+                       resolve_ids, progress = TRUE, strict = FALSE) {
   sources <- resolve_sources(sources)
   snap <- NULL
   if (isTRUE(offline)) {
@@ -85,7 +85,18 @@ run_checks <- function(refs, sources, offline, flag_nature, allow_fuzzy,
   } else {
     for (i in seq_len(n)) rows[[i]] <- match_reference(refs[[i]], sources, ctx)
   }
-  new_retraction_result(rows)
+  res <- new_retraction_result(rows)
+  if (isTRUE(strict)) {
+    n_unchecked <- sum(res$status %in% "unchecked")
+    if (n_unchecked > 0L) {
+      cli::cli_abort(c(
+        "{n_unchecked} reference{?s} could not be checked (strict mode).",
+        "i" = paste0("A source failure left {?it/them} unverified. Rerun without ",
+                     "{.code strict = TRUE} to keep {?it/them} as unchecked.")
+      ))
+    }
+  }
+  res
 }
 
 #' Check a set of DOIs or PMIDs for retraction
@@ -104,6 +115,9 @@ run_checks <- function(refs, sources, offline, flag_nature, allow_fuzzy,
 #' @param resolve_ids If `TRUE`, resolve PMID-only references to a DOI via
 #'   OpenAlex before matching.
 #' @param progress Show a progress bar in interactive sessions.
+#' @param strict If `TRUE`, error when any reference cannot be checked (an
+#'   `unchecked` row from a network or source failure) instead of returning it,
+#'   so a failure cannot be mistaken for a clean result. Useful in CI.
 #' @return A [`retraction_result`][print.retraction_result] tibble.
 #' @examples
 #' \donttest{
@@ -112,10 +126,12 @@ run_checks <- function(refs, sources, offline, flag_nature, allow_fuzzy,
 #' @export
 check_dois <- function(x, sources = getOption("retraction.sources", "xera"),
                        offline = FALSE, flag_nature = c("Retraction", "Expression of Concern"),
-                       allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE) {
+                       allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE,
+                       strict = FALSE) {
   x <- as_chr(x)
   refs <- lapply(x, function(q) as_reference(query = q))
-  run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids, progress)
+  run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids,
+             progress, strict)
 }
 
 #' Check a data frame of references for retraction
@@ -136,7 +152,8 @@ check_refs <- function(data, doi_col = NULL, pmid_col = NULL, title_col = NULL,
                        sources = getOption("retraction.sources", "xera"),
                        offline = FALSE,
                        flag_nature = c("Retraction", "Expression of Concern"),
-                       allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE) {
+                       allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE,
+                       strict = FALSE) {
   if (!is.data.frame(data)) cli::cli_abort("{.arg data} must be a data frame.")
   nm <- names(data)
   for (arg in c("doi_col", "pmid_col", "title_col", "author_col", "year_col")) {
@@ -162,7 +179,8 @@ check_refs <- function(data, doi_col = NULL, pmid_col = NULL, title_col = NULL,
       year = getval(year_col, i), id = paste0("row", i)
     )
   })
-  run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids, progress)
+  run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids,
+             progress, strict)
 }
 
 #' Check a document or bibliography file for retracted references
@@ -189,7 +207,8 @@ check_file <- function(path, format = NULL,
                        sources = getOption("retraction.sources", "xera"),
                        offline = FALSE,
                        flag_nature = c("Retraction", "Expression of Concern"),
-                       allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE) {
+                       allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE,
+                       strict = FALSE) {
   paths <- as_chr(path)
   refs <- unlist(lapply(paths, function(p) parse_input(p, format = format)),
                  recursive = FALSE)
@@ -197,7 +216,8 @@ check_file <- function(path, format = NULL,
     cli::cli_warn("No references or identifiers were found in the input.")
     return(new_retraction_result(list()))
   }
-  run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids, progress)
+  run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids,
+             progress, strict)
 }
 
 #' Check a BibTeX or BibLaTeX bibliography for retracted references
@@ -216,8 +236,9 @@ check_file <- function(path, format = NULL,
 check_bib <- function(path, sources = getOption("retraction.sources", "xera"),
                       offline = FALSE,
                       flag_nature = c("Retraction", "Expression of Concern"),
-                      allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE) {
+                      allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE,
+                      strict = FALSE) {
   check_file(path, format = "bib", sources = sources, offline = offline,
              flag_nature = flag_nature, allow_fuzzy = allow_fuzzy,
-             resolve_ids = resolve_ids, progress = progress)
+             resolve_ids = resolve_ids, progress = progress, strict = strict)
 }

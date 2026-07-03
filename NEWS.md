@@ -39,9 +39,10 @@ against retraction data, and returns a tidy, scored report.
 
 ## Matching
 
-* Matching runs a strict cascade: exact DOI, then PMID (resolved to a DOI
-  through OpenAlex, since the Retraction Watch API cannot be queried by PMID),
-  then fuzzy title matching for references that carry no identifier.
+* Matching runs a strict cascade: exact DOI, then PMID (matched directly against
+  the Retraction Watch corpus, falling back to OpenAlex only to obtain a DOI for
+  the other sources), then fuzzy title matching for references without an
+  identifier. PMID matching no longer requires OpenAlex and also works offline.
 * Exact identifier matches are asserted with high confidence; fuzzy matches are
   reported as possible so you can verify them. A citation of a retraction notice
   is not flagged, and a work that was later reinstated is reported as reinstated.
@@ -67,3 +68,51 @@ against retraction data, and returns a tidy, scored report.
   with `format = "md"`.
 * A bundled example, `retraction_example`, lets examples and tests run without
   network access.
+
+## Interpreting results
+
+* `explain_result()` gives a plain-language sentence per reference: what matched,
+  on which identifier, at what confidence, which sources confirmed, and any
+  disagreement.
+* `compare_sources()` returns the rows where the selected sources disagreed.
+* `exposure_score()` summarizes a document's retraction exposure with proper
+  denominators (checked, unchecked, possible), not a bare flagged rate.
+* `classify_timing()` labels each citation relative to the document's date
+  (conservatively, `document_after_retraction`, unless you supply per-citation
+  dates), to distinguish work cited before vs after its retraction.
+* `snapshot_info()` reports which retraction-database version an offline check
+  ran against; `badge_json()` writes a shields.io endpoint for a README badge.
+
+## Monitoring and systematic reviews
+
+* `retraction_watch_save()` / `retraction_watch_diff()` register a bibliography
+  and later report references that have *become* retracted since, keyed on
+  normalized identifiers so re-ordering does not confuse the diff.
+* `check_included_studies()` checks a review's included-study identifiers,
+  deduplicating and reporting checked/unchecked/retracted counts, since a
+  retracted included trial can invalidate a pooled estimate.
+
+## Workflow integration
+
+* `retraction_scan()` and `retraction_main()` power a command-line check that
+  exits non-zero per a `fail_policy()` (`flagged`, `possible`, `unchecked`,
+  `error`) and **fails closed**: a missing file or a fetch error is an error,
+  never a silently clean pass.
+* `retraction_knit_check()` gates a knitr/Quarto render on retracted citations.
+* An RStudio addin checks the active document; a ready-made GitHub Action
+  (`inst/actions/action.yml`) fails CI on retracted citations.
+* Every `check_*()` gains `strict = TRUE`, which errors when any reference could
+  not be checked rather than returning it as `unchecked`.
+
+## Export, annotation, and queries
+
+* `export_result()` writes CSV, JSON, or Excel; `annotate_bib()` writes a
+  bibliography back out with retracted entries marked (idempotently).
+* `suggest_alternatives()` returns the records the corpus links to a retracted
+  work (a correction or reinstatement) to help decide what to cite instead.
+* `author_retractions()` and `journal_retractions()` query the corpus by author
+  or journal; `primary_reason_bucket()` / `reason_buckets()` group free-text
+  retraction reasons into a coarse taxonomy.
+* Title matching adds a strict `title_exact` tier: an exact title, year, and
+  first author (with a short-title guard) is asserted rather than only flagged
+  as "possible".

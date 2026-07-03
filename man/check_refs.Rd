@@ -16,7 +16,8 @@ check_refs(
   flag_nature = c("Retraction", "Expression of Concern"),
   allow_fuzzy = TRUE,
   resolve_ids = TRUE,
-  progress = TRUE
+  progress = TRUE,
+  strict = FALSE
 )
 }
 \arguments{
@@ -42,6 +43,10 @@ identifier.}
 OpenAlex before matching.}
 
 \item{progress}{Show a progress bar in interactive sessions.}
+
+\item{strict}{If \code{TRUE}, error when any reference cannot be checked (an
+\code{unchecked} row from a network or source failure) instead of returning it,
+so a failure cannot be mistaken for a clean result. Useful in CI.}
 }
 \value{
 A \code{\link[=print.retraction_result]{retraction_result}} tibble.
