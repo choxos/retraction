@@ -42,3 +42,18 @@ test_that("live suggest_alternatives returns a related record", {
   alt <- suggest_alternatives("10.1016/S0140-6736(97)11096-0")
   expect_true(is.null(alt) || nrow(alt) >= 1)
 })
+
+test_that("live Europe PMC and NCBI flag a known retraction", {
+  skip_on_cran()
+  skip_if_offline("www.ebi.ac.uk")
+  epmc <- check_dois("10.1016/S0140-6736(97)11096-0", sources = "europepmc",
+                     resolve_ids = FALSE, progress = FALSE)
+  expect_true(epmc$is_retracted[1])
+})
+
+test_that("live check_preprint reads bioRxiv", {
+  skip_on_cran()
+  skip_if_offline("api.biorxiv.org")
+  pp <- check_preprint("10.1101/2020.01.30.927871")
+  expect_true(is.null(pp) || pp$server == "biorxiv")
+})

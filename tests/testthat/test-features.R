@@ -202,3 +202,18 @@ test_that("a snapshot without PMID columns still works (older export)", {
   # No PMID columns -> all-NA norm columns -> PMID lookup no-ops, no error.
   expect_null(snapshot_hit(snap, as_reference(pmid = "111"), ctx))
 })
+
+## Offline DOI index (F28) ---------------------------------------------------
+
+test_that("the offline DOI index matches and fast-rejects", {
+  snap <- data.frame(
+    record_id = "R1", title = "P", original_paper_doi = "10.1/x",
+    retraction_date = "2012-01-01", retraction_nature = "Retraction",
+    stringsAsFactors = FALSE
+  )
+  snap <- attach_doi_index(add_norm_columns(snap))
+  expect_true(is.environment(attr(snap, "doi_index")))
+  ctx <- list(offline = TRUE, snapshot = snap, allow_fuzzy = FALSE)
+  expect_equal(snapshot_hit(snap, as_reference(doi = "10.1/x"), ctx)$status, "retracted")
+  expect_null(snapshot_hit(snap, as_reference(doi = "10.9/z"), ctx))
+})

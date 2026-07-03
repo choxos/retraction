@@ -1,0 +1,129 @@
+---
+title: "Workflows: CI gates, reviews, monitoring, and pipelines"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Workflows: CI gates, reviews, monitoring, and pipelines}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
+```
+
+This vignette shows task-oriented workflows built on `retraction`. The code
+chunks are not evaluated here because they access the network; run them in your
+own session.
+
+```{r setup}
+library(retraction)
+```
+
+## Gate a manuscript render
+
+Stop a Quarto or R Markdown document from knitting while it still cites retracted
+work. Put this in a setup chunk:
+
+```{r}
+retraction::retraction_knit_check(bib = "references.bib", on = "flagged",
+                                  action = "error")
+```
+
+`on` accepts any of `"flagged"`, `"possible"`, `"unchecked"`, `"error"`; the
+gate **fails closed**, so an unreadable file or a network error stops the render
+rather than passing silently.
+
+## Fail CI on retracted citations
+
+`retraction_scan()` errors on a missing file and returns per-state counts;
+`retraction_main()` wraps it with exit codes for `Rscript`:
+
+```{r}
+# Rscript -e 'retraction::retraction_main()' --fail-on=flagged,unchecked paper.bib
+scan <- retraction_scan("paper.bib")
+scan$n_flagged
+```
+
+A ready-made GitHub Action ships in the package:
+
+```{r}
+system.file("actions", "action.yml", package = "retraction")
+```
+
+## Systematic reviews
+
+Check a review's included studies; a retracted included trial can invalidate a
+pooled estimate. Duplicates are collapsed and denominators reported.
+
+```{r}
+check_included_studies(c("10.1016/S0140-6736(97)11096-0",
+                         "10.1136/bmj.331.7531.1512"))
+```
+
+## Monitor a bibliography over time
+
+Save a baseline, then later report references that have *become* retracted:
+
+```{r}
+res <- check_file("review.bib")
+retraction_watch_save(res, "my-review")
+
+# ... weeks later ...
+newly <- retraction_watch_diff(check_file("review.bib"), "my-review")
+```
+
+## Multiple sources
+
+Beyond the default Retraction Watch source, query Crossref, OpenAlex, Europe PMC,
+NCBI PubMed, DataCite, and a preprint (arXiv/bioRxiv) source, reconciled with a
+disagreement flag:
+
+```{r}
+list_backends()
+check_dois("10.1016/S0140-6736(97)11096-0",
+           sources = c("xera", "europepmc", "ncbi"))
+compare_sources(check_dois("10.1126/science.aac4716", sources = "all"))
+```
+
+## Interpret and export
+
+```{r}
+res <- check_file("paper.bib")
+explain_result(res)                 # a sentence per reference
+exposure_score(res)                 # flagged rate with denominators
+export_result(res, "results.xlsx")  # or .csv / .json
+annotate_bib("paper.bib", res)      # write back a marked-up bibliography
+```
+
+## Offline and at scale
+
+Build a local snapshot once, then check without the network. An in-memory hash
+index makes DOI lookups O(1), and the corpus can be exported to Parquet for
+arrow-based analysis.
+
+```{r}
+retraction_sync()
+check_file("paper.bib", offline = TRUE)
+snapshot_info()
+
+# Parallelism for large reference lists (set a future plan):
+# future::plan("multisession"); check_dois(many_dois)
+
+p <- retraction_snapshot_parquet()
+arrow::open_dataset(p)
+```
+
+## Reproducible pipelines with targets
+
+`retraction` fits a `targets` pipeline as a cached, gated step:
+
+```{r}
+# _targets.R
+library(targets)
+list(
+  tar_target(bib, "paper.bib", format = "file"),
+  tar_target(checked, retraction::check_file(bib)),
+  tar_target(gate, if (nrow(retraction::retracted(checked, "flagged")))
+                     stop("retracted references present") else TRUE)
+)
+```

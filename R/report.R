@@ -97,6 +97,29 @@ REPORT_CSS <- paste(
   "section.danger h2{color:#c0264a}a{color:#1b6ec2}.ok-msg{color:#1a7f47;font-weight:600}",
   "footer{color:#888;font-size:.8rem;margin-top:2rem}", sep = "")
 
+# Self-contained (no CDN) client-side sort + filter for the report tables.
+REPORT_JS <- paste0(
+  "document.querySelectorAll('table').forEach(function(t){",
+  "t.querySelectorAll('th').forEach(function(th,ci){th.style.cursor='pointer';",
+  "th.title='Sort';th.addEventListener('click',function(){",
+  "var tb=t.tBodies[0];var rows=Array.prototype.slice.call(tb.rows);",
+  "var asc=th.getAttribute('data-asc')!=='1';th.setAttribute('data-asc',asc?'1':'0');",
+  "rows.sort(function(a,b){var x=a.cells[ci].innerText.trim();var y=b.cells[ci].innerText.trim();",
+  "var nx=parseFloat(x),ny=parseFloat(y);",
+  "if(!isNaN(nx)&&!isNaN(ny))return asc?nx-ny:ny-nx;",
+  "return asc?x.localeCompare(y):y.localeCompare(x);});",
+  "rows.forEach(function(r){tb.appendChild(r);});});});});",
+  "var f=document.getElementById('rt-filter');if(f){f.addEventListener('input',function(){",
+  "var q=f.value.toLowerCase();document.querySelectorAll('tbody tr').forEach(function(r){",
+  "r.style.display=r.innerText.toLowerCase().indexOf(q)>-1?'':'none';});});}"
+)
+
+REPORT_JS_CSS <- paste0(
+  ".filter{width:100%;max-width:24rem;padding:.5rem .7rem;margin:.5rem 0 1rem;",
+  "border:1px solid #ccc;border-radius:6px;font-size:1rem}",
+  "th{user-select:none}th:hover{text-decoration:underline}"
+)
+
 #' @noRd
 render_html <- function(x, title) {
   cnt <- result_counts(x)
@@ -127,16 +150,25 @@ render_html <- function(x, title) {
     sections <- paste0(sections, "<p class='ok-msg'>",
                        html_escape(clean_message(cnt)), "</p>")
   }
+  has_rows <- nrow(fl) > 0 || nrow(ps) > 0 || nrow(nt) > 0
+  filter_input <- if (has_rows) {
+    paste0("<input id='rt-filter' class='filter' type='search' ",
+           "placeholder='Filter references...' aria-label='Filter references'>")
+  } else {
+    ""
+  }
   paste0(
     "<!doctype html><html lang='en'><head><meta charset='utf-8'>",
     "<meta name='viewport' content='width=device-width, initial-scale=1'>",
-    "<title>", html_escape(title), "</title><style>", REPORT_CSS, "</style></head><body>",
+    "<title>", html_escape(title), "</title><style>", REPORT_CSS, REPORT_JS_CSS,
+    "</style></head><body>",
     "<h1>", html_escape(title), "</h1>",
     sprintf("<p class='meta'>Generated %s. %d reference%s checked.</p>",
             html_escape(format(Sys.time())), cnt$n, if (cnt$n == 1L) "" else "s"),
-    cards, sections,
+    cards, filter_input, sections,
     "<footer>Created with the retraction R package. Sources: ",
     html_escape(sources_used(x)), ".</footer>",
+    "<script>", REPORT_JS, "</script>",
     "</body></html>"
   )
 }

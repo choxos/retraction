@@ -75,7 +75,15 @@ run_checks <- function(refs, sources, offline, flag_nature, allow_fuzzy,
 
   n <- length(refs)
   rows <- vector("list", n)
-  if (isTRUE(progress) && n > 1L && interactive()) {
+  # Parallelize across references when the user has set a non-sequential future
+  # plan and furrr is installed; order is preserved. Otherwise run sequentially.
+  use_parallel <- n > 1L &&
+    requireNamespace("furrr", quietly = TRUE) &&
+    requireNamespace("future", quietly = TRUE) &&
+    !inherits(future::plan(), "sequential")
+  if (use_parallel) {
+    rows <- furrr::future_map(refs, function(r) match_reference(r, sources, ctx))
+  } else if (isTRUE(progress) && n > 1L && interactive()) {
     cli::cli_progress_bar("Checking references", total = n, clear = TRUE)
     for (i in seq_len(n)) {
       rows[[i]] <- match_reference(refs[[i]], sources, ctx)

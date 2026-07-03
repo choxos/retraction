@@ -82,6 +82,10 @@ register_builtin_backends <- function() {
   register_backend("xera", backend_xera, priority = 1L)
   register_backend("crossref", backend_crossref, priority = 2L)
   register_backend("openalex", backend_openalex, priority = 3L)
+  register_backend("europepmc", backend_europepmc, priority = 4L)
+  register_backend("ncbi", backend_ncbi, priority = 5L)
+  register_backend("datacite", backend_datacite, priority = 6L)
+  register_backend("preprint", backend_preprint, priority = 7L)
   invisible()
 }
 
@@ -264,13 +268,32 @@ backend_xera <- function(ref, ctx) {
 #' @noRd
 crossref_verdict <- function(msg, doi) {
   title <- na_if_empty(as_chr(pluck1(msg, "title"))[1])
-  evidence <- character(0)
-  retracted <- FALSE
 
-  # Signals that this DOI is the retracted work itself. The `update-to` field is
-  # deliberately not used: it appears on the retraction notice pointing to the
-  # original, so keying on it would flag the notice DOI, not the retracted work.
-  if (!is.na(title) && grepl("^\\s*retracted", title, ignore.case = TRUE)) {
+  # If this DOI is itself an update notice (correction, erratum, expression of
+  # concern, retraction, ...), it carries `update-to`. Citing a notice is not
+  # citing the retracted work, so it is matched but not flagged; the notice type
+  # is recorded. This covers corrections and EoC, not just retractions.
+  ut <- vapply(pluck1(msg, "update-to") %||% list(),
+               function(u) tolower(na_if_empty(pluck1(u, "type")) %||% ""),
+               character(1))
+  ut <- ut[nzchar(ut)]
+  if (length(ut)) {
+    label <- status_label(classify_status(gsub("_", " ", ut[1])))
+    return(new_hit(
+      "crossref", 2L, checked = TRUE, matched = TRUE, status = "none",
+      doi = doi, title = title, notice_type = label, status_source = "crossref",
+      matched_on = "retraction_doi", match_type = "doi_exact",
+      confidence = score_match("doi_exact"),
+      evidence = paste0("update_to_", ut[1]), raw = msg
+    ))
+  }
+
+  # Otherwise this DOI is the work itself. Publishers prepend "RETRACTED:" /
+  # "WITHDRAWN:" to a retracted work's title; a Crossref relation is a second
+  # signal. (Corrections/EoC of the original are not reliably on the work in
+  # Crossref; those come from the Retraction Watch source.)
+  evidence <- character(0); retracted <- FALSE
+  if (!is.na(title) && grepl("^\\s*(retracted|withdrawn)\\b", title, ignore.case = TRUE)) {
     retracted <- TRUE; evidence <- c(evidence, "title_prefix")
   }
   if (!is.null(pluck1(msg, "relation", "is-retracted-by"))) {
