@@ -23,3 +23,14 @@ test_that("identifier sniffing works", {
   expect_true(looks_like_pmid("12345678"))
   expect_false(looks_like_pmid("10.1/x"))
 })
+
+test_that("normalize_title folds accents with or without stringi", {
+  expect_equal(normalize_title("Résumé"), "resume")
+  expect_true(is.na(normalize_title(NA)))
+  expect_equal(normalize_title("RETRACTED: A Trial"), "a trial")
+})
+
+test_that("normalize_title romanizes non-Latin scripts when stringi is present", {
+  skip_if_not_installed("stringi")
+  expect_true(nzchar(normalize_title("撤回的研究")))
+})

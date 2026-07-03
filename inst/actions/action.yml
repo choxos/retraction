@@ -42,7 +42,7 @@ runs:
         # Fails closed: retraction_scan() errors on a missing file by default.
         scan <- retraction::retraction_scan(paths)
         print(scan$result)
-        verdict <- retraction:::evaluate_policy(scan$result, policy, scan$n_errors)
+        verdict <- retraction::evaluate_policy(scan$result, policy, scan$n_errors)
         for (f in names(scan$errors)) cat(sprintf("::error file=%s::%s\n", f, scan$errors[[f]]))
         if (verdict$fail) {
           cat(sprintf("::error::retraction gate triggered: %s\n",

@@ -43,14 +43,22 @@ fail_policy <- function(on = "flagged") {
   structure(list(on = on), class = "retraction_fail_policy")
 }
 
-#' Evaluate a result against a fail policy.
+#' Evaluate a checked result against a fail policy
 #'
-#' @param res A `retraction_result`.
+#' Decides whether a [fail_policy()] is triggered by a result, for building
+#' custom gates (the CLI, knit gate, and GitHub Action use it).
+#'
+#' @param res A [`retraction_result`][print.retraction_result].
 #' @param policy A [fail_policy()].
 #' @param n_errors Count of files that errored during the scan.
 #' @return A list: `fail` (logical), `triggered` (character reasons), `counts`
-#'   (the per-state counts), `n_errors`.
-#' @noRd
+#'   (the per-state counts), and `n_errors`.
+#' @examples
+#' \donttest{
+#' res <- check_dois("10.1016/S0140-6736(97)11096-0")
+#' evaluate_policy(res, fail_policy("flagged"))$fail
+#' }
+#' @export
 evaluate_policy <- function(res, policy, n_errors = 0L) {
   cnt <- result_counts(res)
   hits <- character(0)

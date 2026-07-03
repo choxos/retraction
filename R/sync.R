@@ -175,10 +175,16 @@ retraction_sync <- function(force = FALSE, incremental = TRUE, quiet = FALSE) {
 
   snap <- add_norm_columns(snap)
   attr(snap, "synced_at") <- Sys.time()
-  # Write atomically so an interrupted write cannot corrupt the snapshot.
+  # Write atomically so an interrupted write cannot corrupt the snapshot. Only
+  # advance the in-memory cache once the on-disk file is actually replaced
+  # (file.rename over an existing file can fail on some platforms).
   tmp <- paste0(path, ".tmp")
   saveRDS(snap, tmp)
-  file.rename(tmp, path)
+  if (!file.rename(tmp, path)) {
+    ok <- file.copy(tmp, path, overwrite = TRUE)
+    unlink(tmp)
+    if (!ok) cli::cli_abort("Could not write the snapshot to {.file {path}}.")
+  }
   .snapshot_cache$data <- snap
   .snapshot_cache$freshness_checked <- TRUE
 

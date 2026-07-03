@@ -13,11 +13,13 @@ normalize_title(x)
 A character vector of normalized titles.
 }
 \description{
-Transliterates to lowercase ASCII Latin (so diacritics, ligatures, full-width
-forms, and non-Latin scripts such as CJK fold to a comparable base form),
-removes a leading "Retracted:" style marker, strips markup and punctuation,
-and collapses whitespace. The original title is retained elsewhere for
-reporting; this form is used solely for string distance.
+Transliterates to lowercase ASCII Latin (so diacritics, ligatures, and
+full-width forms fold to a comparable base form), removes a leading
+"Retracted:" style marker, strips markup and punctuation, and collapses
+whitespace. The original title is retained elsewhere for reporting; this form
+is used solely for string distance. If the optional stringi package is
+installed, non-Latin scripts (such as CJK) are also romanized; otherwise they
+are dropped by the base fallback.
 }
 \examples{
 normalize_title("Résumé of a Study")   # accents folded

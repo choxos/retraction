@@ -50,11 +50,13 @@ normalize_pmid <- function(x) {
 
 #' Normalize a title for fuzzy comparison only.
 #'
-#' Transliterates to lowercase ASCII Latin (so diacritics, ligatures, full-width
-#' forms, and non-Latin scripts such as CJK fold to a comparable base form),
-#' removes a leading "Retracted:" style marker, strips markup and punctuation,
-#' and collapses whitespace. The original title is retained elsewhere for
-#' reporting; this form is used solely for string distance.
+#' Transliterates to lowercase ASCII Latin (so diacritics, ligatures, and
+#' full-width forms fold to a comparable base form), removes a leading
+#' "Retracted:" style marker, strips markup and punctuation, and collapses
+#' whitespace. The original title is retained elsewhere for reporting; this form
+#' is used solely for string distance. If the optional stringi package is
+#' installed, non-Latin scripts (such as CJK) are also romanized; otherwise they
+#' are dropped by the base fallback.
 #'
 #' @param x A character vector of titles.
 #' @return A character vector of normalized titles.
@@ -64,9 +66,15 @@ normalize_pmid <- function(x) {
 normalize_title <- function(x) {
   x <- as.character(x)
   # Unicode fold: romanize non-Latin scripts, strip accents, drop to lowercase.
-  # NFKC first normalizes compatibility/full-width forms before transliteration.
-  x <- stringi::stri_trans_nfkc(x)
-  x <- stringi::stri_trans_general(x, "Any-Latin; Latin-ASCII; Lower")
+  # stringi (optional) gives the fullest fold, including romanizing CJK; without
+  # it, base iconv still folds accented Latin to ASCII (non-Latin scripts drop).
+  if (requireNamespace("stringi", quietly = TRUE)) {
+    x <- stringi::stri_trans_nfkc(x)
+    x <- stringi::stri_trans_general(x, "Any-Latin; Latin-ASCII; Lower")
+  } else {
+    x <- tolower(enc2utf8(x))
+    x <- suppressWarnings(iconv(x, from = "UTF-8", to = "ASCII//TRANSLIT", sub = ""))
+  }
   x <- sub(paste0("^\\s*[\\[(]?\\s*(retracted(\\s+article)?|retraction(\\s+of)?|",
                   "withdrawn|withdrawal|expression of concern)\\b"),
            "", x, perl = TRUE)

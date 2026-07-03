@@ -31,11 +31,11 @@ is_withdrawn_text <- function(...) {
 #' Query arXiv for withdrawal. NULL on failure.
 #' @noRd
 arxiv_withdrawn <- function(id) {
-  doc <- tryCatch(
-    xml2::read_xml(paste0("http://export.arxiv.org/api/query?id_list=",
-                          utils::URLencode(id, reserved = TRUE))),
-    error = function(e) NULL
-  )
+  # HTTPS, through the shared perform layer (timeout, retry, user-agent), rather
+  # than xml2::read_xml() fetching a bare http:// URL with no timeout.
+  txt <- http_get_text("https://export.arxiv.org/api/query", list(id_list = id))
+  if (is.null(txt) || !nzchar(txt)) return(NULL)
+  doc <- tryCatch(xml2::read_xml(txt), error = function(e) NULL)
   if (is.null(doc)) return(NULL)
   el <- function(n) {
     na_if_empty(xml2::xml_text(

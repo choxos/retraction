@@ -99,8 +99,9 @@ run_checks <- function(refs, sources, offline, flag_nature, allow_fuzzy,
     if (n_unchecked > 0L) {
       cli::cli_abort(c(
         "{n_unchecked} reference{?s} could not be checked (strict mode).",
-        "i" = paste0("A source failure left {?it/them} unverified. Rerun without ",
-                     "{.code strict = TRUE} to keep {?it/them} as unchecked.")
+        "i" = paste0("{cli::qty(n_unchecked)}A source failure left {?it/them} ",
+                     "unverified. Rerun without {.code strict = TRUE} to keep ",
+                     "{?it/them} as unchecked.")
       ))
     }
   }
@@ -218,9 +219,19 @@ check_file <- function(path, format = NULL,
                        allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE,
                        strict = FALSE) {
   paths <- as_chr(path)
+  if (isTRUE(strict)) {
+    missing <- paths[!file.exists(paths)]
+    if (length(missing)) {
+      cli::cli_abort("Cannot check; file{?s} not found: {.file {missing}}.")
+    }
+  }
   refs <- unlist(lapply(paths, function(p) parse_input(p, format = format)),
                  recursive = FALSE)
   if (!length(refs)) {
+    if (isTRUE(strict)) {
+      cli::cli_abort(c("No references or identifiers were found (strict mode).",
+                       "i" = "Pass {.code strict = FALSE} to allow empty input."))
+    }
     cli::cli_warn("No references or identifiers were found in the input.")
     return(new_retraction_result(list()))
   }

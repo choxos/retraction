@@ -63,3 +63,15 @@ http_get_json <- function(url, query = list(), headers = list()) {
   if (length(headers)) req <- do.call(httr2::req_headers, c(list(req), headers))
   .http_perform(req, parse = "json")
 }
+
+#' GET an absolute URL as text, through the shared perform layer (timeout,
+#' retry, user-agent). Used for XML/Atom endpoints such as arXiv.
+#' @noRd
+http_get_text <- function(url, query = list(), headers = list()) {
+  req <- httr2::request(url)
+  query <- compact(query)
+  if (length(query)) req <- do.call(httr2::req_url_query, c(list(req), query))
+  headers <- compact(headers)
+  if (length(headers)) req <- do.call(httr2::req_headers, c(list(req), headers))
+  .http_perform(req, parse = "text")
+}
