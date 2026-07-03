@@ -15,8 +15,8 @@ A named list: \code{n_total}, \code{n_checked}, \code{n_flagged}, \code{n_possib
 }
 \description{
 A bare \code{flagged / n} headline is misleading when many rows are unchecked or
-only "possible" (future-work review #7), so this reports the full breakdown
-and two rates: per total, and per successfully-checked.
+only "possible", so this reports the full breakdown and two rates: per total,
+and per successfully-checked.
 }
 \examples{
 \donttest{

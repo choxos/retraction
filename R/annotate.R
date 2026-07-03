@@ -1,8 +1,8 @@
 # Write an input bibliography back out with retracted entries annotated, so the
 # warning travels with the library. (Roadmap D17.)
 #
-# Idempotent (future-work review #12 / P4): an entry already carrying a
-# "RETRACTED" note is left alone, so re-running does not duplicate notes. The
+# Idempotent: an entry already carrying a "RETRACTED" note is left alone, so
+# re-running does not duplicate notes. The
 # inserted field changes field order (it goes right after the key); a `.bib`
 # formatter may renormalize it. Assumes result `id`s are the BibTeX keys (true
 # for check_file() on a .bib). BibLaTeX macros/@string are not expanded.

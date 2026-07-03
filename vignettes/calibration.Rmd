@@ -23,9 +23,12 @@ matching, and two thresholds govern that fallback:
   retracted; everything else is reported as "possible" for the user to verify.
 
 This article reports a calibration of those two numbers against a labeled corpus,
-so they are evidence-based rather than guessed. The scripts are in `data-raw/`
-(`calibration_corpus.R`, `calibration_analysis.R`) and the labeled corpus ships
-in `inst/extdata/calibration_corpus.csv`, so the study is reproducible.
+so they are evidence-based rather than guessed. The labeled corpus ships with the
+package in `inst/extdata/calibration_corpus.csv`, and the two scripts that build
+and analyze it (`calibration_corpus.R`, `calibration_analysis.R`) live in the
+`data-raw/` directory of the
+[source repository](https://github.com/choxos/retraction), so the study is
+reproducible from a repository checkout.
 
 ## The labeled corpus
 
@@ -97,6 +100,10 @@ direction that matters: the package prefers "possible, please verify" over a
 false assertion.
 
 ## Reproducing
+
+The two scripts below are in the `data-raw/` directory of the
+[source repository](https://github.com/choxos/retraction) (they are not part of
+the installed package). Run them from a repository checkout:
 
 ```{r}
 retraction_sync()                       # local corpus

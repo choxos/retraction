@@ -1,9 +1,8 @@
 # Bucket free-text retraction reasons into a small taxonomy. (Roadmap E25.)
 #
 # Retraction Watch reasons are free text and often list several causes, so this
-# is deliberately COARSE and ENGLISH-ONLY (future-work review #11 / P7). The
-# primary bucket is lossy (first match wins); use `reason_buckets()` for the full
-# multi-label set.
+# is deliberately COARSE and ENGLISH-ONLY. The primary bucket is lossy (first
+# match wins); use `reason_buckets()` for the full multi-label set.
 
 REASON_BUCKETS <- c(
   misconduct = "fabricat|falsif|manipulat|misconduct|fake|forged|data integrity",

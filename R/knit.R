@@ -1,9 +1,9 @@
 # Gate a document render on retracted citations, so a manuscript cannot be knit
 # while it still cites retracted work. (Roadmap A2.)
 #
-# Fails CLOSED (future-work review, F6 / ChatGPT #4): an unreadable input or a
-# parse/network error is surfaced, not swallowed. A gate whose job is to catch
-# problems must not pass silently when it could not check.
+# Fails CLOSED: an unreadable input or a parse/network error is surfaced, not
+# swallowed. A gate whose job is to catch problems must not pass silently when it
+# could not check.
 
 #' Fail (or warn) a knit when the document cites retracted work.
 #'

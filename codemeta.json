@@ -3,7 +3,7 @@
   "@type": "SoftwareSourceCode",
   "@id": "https://github.com/choxos/retraction",
   "name": "retraction",
-  "description": "Scans documents, bibliographies, and reference lists for citations to retracted publications, using Retraction Watch (via the XeraRetractionTracker API), Crossref, and OpenAlex, and reports them as a tidy, confidence-scored table with an optional self-contained HTML or Markdown report.",
+  "description": "Scans documents, bibliographies, and reference lists for citations to retracted publications, using Retraction Watch (via the XeraRetractionTracker API), Crossref, OpenAlex, Europe PMC, PubMed, DataCite, and preprint (arXiv and bioRxiv) sources, and reports them as a tidy table scored by match quality with an optional self-contained HTML or Markdown report.",
   "codeRepository": "https://github.com/choxos/retraction",
   "url": "https://choxos.github.io/retraction/",
   "issueTracker": "https://github.com/choxos/retraction/issues",
@@ -11,7 +11,7 @@
   "version": "0.1.0",
   "softwareVersion": "0.1.0",
   "programmingLanguage": "R",
-  "runtimePlatform": "R >= 4.1",
+  "runtimePlatform": "R >= 4.0",
   "operatingSystem": "OS Independent",
   "applicationCategory": "Research integrity",
   "developmentStatus": "active",
@@ -25,7 +25,7 @@
     "R"
   ],
   "softwareRequirements": [
-    "R >= 4.1",
+    "R >= 4.0",
     "cli",
     "httr2",
     "jsonlite",

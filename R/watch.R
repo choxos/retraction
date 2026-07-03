@@ -2,9 +2,9 @@
 # references that have become retracted since. (Roadmap C15.)
 #
 # Persistence is a versioned schema keyed on normalized identifiers, not the raw
-# display `id` (future-work review P3 / #8): `id` is query- or title-derived and
-# not stable across re-orderings or normalization drift, which would cause false
-# negatives (missed newly-retracted) and false positives.
+# display `id`: `id` is query- or title-derived and not stable across
+# re-orderings or normalization drift, which would cause false negatives (missed
+# newly-retracted) and false positives.
 
 # Bump when the baseline schema changes; a mismatched baseline is refused.
 WATCH_SCHEMA_VERSION <- 1L

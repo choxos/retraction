@@ -2,10 +2,9 @@
 # (Roadmap E23, E24.)
 #
 # Uses `rbind_union()` (R/sync.R) rather than bare `rbind` so a schema change
-# across pages does not error (future-work review F4), and warns on truncation
-# rather than silently capping (P6). `search/advanced` items share the paper
-# shape used by `/papers`, so `papers_items_to_df()` maps them; if the endpoint
-# diverges, adjust that mapper.
+# across pages does not error, and warns on truncation rather than silently
+# capping. `search/advanced` items share the paper shape used by `/papers`, so
+# `papers_items_to_df()` maps them; if the endpoint diverges, adjust that mapper.
 
 #' Page through a Xera `search/advanced` query into a data frame.
 #'

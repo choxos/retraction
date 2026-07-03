@@ -27,4 +27,30 @@ Base URL: https://api.openalex.org/
 The OpenAlex dataset is released under CC0. The "is_retracted" flag it exposes
 is derived from the Retraction Watch database.
 
+Europe PMC (optional source)
+----------------------------
+Base URL: https://www.ebi.ac.uk/europepmc/
+Europe PMC provides open access to a worldwide collection of life-science
+literature. Users should observe the Europe PMC terms of use.
+
+NCBI E-utilities / PubMed (optional source)
+-------------------------------------------
+Base URL: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
+Used for PubMed publication types and, for check_pmc(), PubMed Central
+open-access full text. The package sends an optional tool and email value and
+honors NCBI rate limits (raised with an API key). Users should observe the
+NCBI usage policies and disclaimer.
+
+DataCite (optional source)
+--------------------------
+Base URL: https://api.datacite.org/
+DataCite metadata is openly available under CC0. Used to detect superseded or
+withdrawn datasets via related-identifier relations.
+
+Preprint servers (optional source)
+----------------------------------
+Base URLs: https://export.arxiv.org/ and https://api.biorxiv.org/
+Used to detect withdrawn arXiv and bioRxiv preprints. Users should observe the
+respective arXiv and bioRxiv terms of use.
+
 No third-party code is bundled in this package.

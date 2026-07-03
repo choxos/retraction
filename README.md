@@ -155,8 +155,9 @@ Retraction data comes from the
 through [Crossref](https://gitlab.com/crossref/retraction-watch-data) and served
 by [XeraRetractionTracker](https://openscience.xera.ac/retractions). The optional
 Crossref and OpenAlex backends use their public APIs; OpenAlex's `is_retracted`
-flag is itself derived from Retraction Watch. See `LICENSE.note` in the source
-repository for details.
+flag is itself derived from Retraction Watch. See the `LICENSE.note` file shipped
+with the package (and in the source repository) for the full data-provenance
+note covering every source.
 
 ## Use of AI
 

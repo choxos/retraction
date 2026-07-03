@@ -203,7 +203,7 @@ test_that("a snapshot without PMID columns still works (older export)", {
   expect_null(snapshot_hit(snap, as_reference(pmid = "111"), ctx))
 })
 
-## Offline DOI index (F28) ---------------------------------------------------
+## Offline DOI index ---------------------------------------------------------
 
 test_that("the offline DOI index matches and fast-rejects", {
   snap <- data.frame(
@@ -218,7 +218,7 @@ test_that("the offline DOI index matches and fast-rejects", {
   expect_null(snapshot_hit(snap, as_reference(doi = "10.9/z"), ctx))
 })
 
-## Audit-3 regression tests -------------------------------------------------
+## Backend-failure and strict-mode regression tests --------------------------
 
 test_that("a throwing backend is recorded as a failure and strict errors cleanly", {
   register_backend("boomtest", function(ref, ctx) stop("boom"), priority = 1L)

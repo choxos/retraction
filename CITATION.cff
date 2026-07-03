@@ -3,7 +3,7 @@ message: "If you use retraction, please cite the software repository and the ver
 type: software
 title: "retraction: Detect Retracted References in Documents and Bibliographies"
 version: 0.1.0
-abstract: "retraction scans manuscripts, bibliographies, and reference lists for citations to retracted publications. It reads bibliographic and document formats, normalizes identifiers, and checks them against retraction data from Retraction Watch (via the XeraRetractionTracker API), Crossref, and OpenAlex, returning a tidy, confidence-scored report."
+abstract: "retraction scans manuscripts, bibliographies, and reference lists for citations to retracted publications. It reads bibliographic and document formats, normalizes identifiers, and checks them against retraction data from Retraction Watch (via the XeraRetractionTracker API), Crossref, OpenAlex, Europe PMC, PubMed, DataCite, and preprint (arXiv and bioRxiv) sources, returning a tidy report scored by match quality."
 authors:
   - family-names: Sofi-Mahmudi
     given-names: Ahmad

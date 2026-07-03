@@ -67,8 +67,8 @@ manuscript_date_of <- function(path) {
 #' Retraction-exposure summary, with denominator diagnostics.
 #'
 #' A bare `flagged / n` headline is misleading when many rows are unchecked or
-#' only "possible" (future-work review #7), so this reports the full breakdown
-#' and two rates: per total, and per successfully-checked.
+#' only "possible", so this reports the full breakdown and two rates: per total,
+#' and per successfully-checked.
 #'
 #' @param x A `retraction_result`.
 #' @return A named list: `n_total`, `n_checked`, `n_flagged`, `n_possible`,

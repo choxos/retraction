@@ -1,6 +1,6 @@
 {
   "title": "retraction: Detect Retracted References in Documents and Bibliographies",
-  "description": "retraction scans manuscripts, bibliographies, and reference lists for citations to retracted publications. It reads bibliographic and document formats, normalizes identifiers, and checks them against retraction data from Retraction Watch (via the XeraRetractionTracker API), Crossref, and OpenAlex, returning a tidy, confidence-scored report with an optional self-contained HTML report.",
+  "description": "retraction scans manuscripts, bibliographies, and reference lists for citations to retracted publications. It reads bibliographic and document formats, normalizes identifiers, and checks them against retraction data from Retraction Watch (via the XeraRetractionTracker API), Crossref, OpenAlex, Europe PMC, PubMed, DataCite, and preprint (arXiv and bioRxiv) sources, returning a tidy report scored by match quality with an optional self-contained HTML report.",
   "upload_type": "software",
   "license": "GPL-3.0-only",
   "creators": [

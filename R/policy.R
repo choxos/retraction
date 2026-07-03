@@ -1,7 +1,6 @@
 # Shared plumbing for the workflow features: a dependency guard that avoids an
 # undeclared `rlang`, a stable result-combiner, and one fail policy so the CLI,
 # Action, knit gate, and report do not each reinvent thresholds.
-# (Addresses future-work review: fail-closed CI, stable row-combiner, shared policy.)
 
 #' Require an optional package without depending on `rlang`.
 #' @noRd

@@ -207,6 +207,10 @@ jats_article_doi <- function(doc) {
 #' @param x A character (or numeric) vector of PMIDs, PMCIDs, DOIs, titles, or
 #'   reference strings.
 #' @param cache Cache fetched XML on disk (see [pmc_fetch_xml()]).
+#' @param strict If `TRUE`, fail closed: abort when any input cannot be resolved
+#'   to a PubMed Central article or its open-access full text cannot be
+#'   retrieved, and (as in [check_dois()]) when any resulting reference cannot be
+#'   checked, instead of returning a clean-looking partial result.
 #' @inheritParams check_dois
 #' @return A [`retraction_result`][print.retraction_result] tibble of the
 #'   references found across the open-access articles (the `source_file` column
@@ -224,9 +228,10 @@ check_pmc <- function(x, sources = getOption("retraction.sources", "xera"),
                       offline = FALSE,
                       flag_nature = c("Retraction", "Expression of Concern"),
                       allow_fuzzy = TRUE, resolve_ids = TRUE, cache = TRUE,
-                      progress = TRUE) {
+                      progress = TRUE, strict = FALSE) {
   inputs <- as_chr(x)
   if (!length(inputs)) {
+    if (isTRUE(strict)) cli::cli_abort("No inputs were provided (strict mode).")
     cli::cli_warn("No inputs were provided.")
     return(structure(new_retraction_result(list()),
                      articles = empty_articles()))
@@ -253,8 +258,14 @@ check_pmc <- function(x, sources = getOption("retraction.sources", "xera"),
     )
   }
 
+  # Strict mode fails closed: an input we could not resolve to a PMC article, or
+  # an article whose open-access full text we could not retrieve, is an input we
+  # could not check, so it is surfaced rather than passing as a clean empty set.
+  if (isTRUE(strict)) pmc_strict_check(inputs, arts)
+
   result <- if (length(refs)) {
-    run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids, progress)
+    run_checks(refs, sources, offline, flag_nature, allow_fuzzy, resolve_ids,
+               progress, strict = strict)
   } else {
     new_retraction_result(list())
   }
@@ -275,6 +286,34 @@ check_pmc <- function(x, sources = getOption("retraction.sources", "xera"),
 pmc_articles <- function(x) {
   a <- attr(x, "articles")
   if (is.null(a)) empty_articles() else a
+}
+
+#' Abort under strict mode when any input could not be resolved or retrieved.
+#'
+#' Pure and testable: takes the original inputs and the per-article records
+#' (each a list with `resolved`/`retrieved` flags). An input that did not resolve
+#' to a PMC article, or a resolved article whose full text was not retrievable,
+#' is an input that could not be checked, so strict mode surfaces it.
+#' @noRd
+pmc_strict_check <- function(inputs, arts) {
+  unresolved <- inputs[!vapply(arts, function(a) isTRUE(a$resolved), logical(1))]
+  n_unret <- sum(vapply(arts,
+                        function(a) isTRUE(a$resolved) && !isTRUE(a$retrieved),
+                        logical(1)))
+  problems <- character(0)
+  if (length(unresolved)) {
+    problems <- c(problems, "x" = paste0(
+      "{length(unresolved)} input{?s} did not resolve to a PubMed Central article"))
+  }
+  if (n_unret) {
+    problems <- c(problems, "x" = paste0(
+      "{n_unret} resolved article{?s} had no retrievable open-access full text"))
+  }
+  if (length(problems)) {
+    cli::cli_abort(c("Cannot check every input (strict mode).", problems,
+                     "i" = "Rerun without {.code strict = TRUE} for a partial result."))
+  }
+  invisible(TRUE)
 }
 
 #' @noRd

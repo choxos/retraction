@@ -1,10 +1,9 @@
 # Command-line entrypoint: scan files and exit non-zero per a fail policy, for
 # CI or a pre-commit hook. (Roadmap A3/A4.)
 #
-# Fails CLOSED (future-work review, F7 / ChatGPT #4): a missing file or a
-# parse/network error is an error, not a silent skip. A CI gate that passes on a
-# typo'd path is a false negative, which for a retraction check is the worst
-# failure mode. Uses fail_policy() from policy.R.
+# Fails CLOSED: a missing file or a parse/network error is an error, not a silent
+# skip. A CI gate that passes on a typo'd path is a false negative, which for a
+# retraction check is the worst failure mode. Uses fail_policy() from policy.R.
 
 #' Scan files for retracted citations.
 #'

@@ -13,6 +13,6 @@ Invisibly, the \code{retraction_result}.
 For a \strong{saved} document, checks the file in place, so relative
 \verb{bibliography:} paths in the YAML header resolve. For an \strong{unsaved} buffer it
 can only scan inline identifiers (DOIs in the text), not an external
-bibliography, and says so (future-work review #13). Prints the result and
+bibliography, and says so. Prints the result and
 moves the cursor to the first flagged citation when a location is known.
 }

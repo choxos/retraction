@@ -1,10 +1,10 @@
 # Systematic-review helper: flag retracted studies among a review's included set.
 # A retracted included trial can invalidate a pooled estimate. (Roadmap E22.)
 #
-# This is a *helper*, not a full review data model (future-work review #9): it
-# dedupes identifiers and reports proper denominators, but does not track
-# screening stage, multiple reports of one study, or trial-registration IDs.
-# Those belong in a later, richer model.
+# This is a *helper*, not a full review data model: it dedupes identifiers and
+# reports proper denominators, but does not track screening stage, multiple
+# reports of one study, or trial-registration IDs. Those belong in a later,
+# richer model.
 
 #' Check the included studies of a systematic review or meta-analysis.
 #'

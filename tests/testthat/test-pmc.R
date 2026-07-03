@@ -19,6 +19,19 @@ test_that("check_pmc with no input warns and returns an empty result", {
   expect_equal(nrow(res), 0)
 })
 
+test_that("check_pmc strict errors on empty input", {
+  expect_error(check_pmc(character(0), strict = TRUE, progress = FALSE), "strict")
+})
+
+test_that("pmc_strict_check fails closed on unresolved or unretrieved inputs", {
+  ok <- list(list(input = "a", resolved = TRUE, retrieved = TRUE))
+  expect_true(pmc_strict_check("a", ok))
+  unresolved <- list(list(input = "b", resolved = FALSE, retrieved = FALSE))
+  expect_error(pmc_strict_check("b", unresolved), "strict")
+  unretrieved <- list(list(input = "c", resolved = TRUE, retrieved = FALSE))
+  expect_error(pmc_strict_check("c", unretrieved), "strict")
+})
+
 test_that("live: check_pmc resolves a DOI to an open-access PMC article", {
   skip_on_cran()
   skip_if_offline("www.ncbi.nlm.nih.gov")

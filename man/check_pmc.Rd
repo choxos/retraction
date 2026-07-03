@@ -12,7 +12,8 @@ check_pmc(
   allow_fuzzy = TRUE,
   resolve_ids = TRUE,
   cache = TRUE,
-  progress = TRUE
+  progress = TRUE,
+  strict = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ OpenAlex before matching.}
 \item{cache}{Cache fetched XML on disk (see \code{\link[=pmc_fetch_xml]{pmc_fetch_xml()}}).}
 
 \item{progress}{Show a progress bar in interactive sessions.}
+
+\item{strict}{If \code{TRUE}, fail closed: abort when any input cannot be resolved
+to a PubMed Central article or its open-access full text cannot be
+retrieved, and (as in \code{\link[=check_dois]{check_dois()}}) when any resulting reference cannot be
+checked, instead of returning a clean-looking partial result.}
 }
 \value{
 A \code{\link[=print.retraction_result]{retraction_result}} tibble of the

@@ -6,7 +6,7 @@
 #' For a **saved** document, checks the file in place, so relative
 #' `bibliography:` paths in the YAML header resolve. For an **unsaved** buffer it
 #' can only scan inline identifiers (DOIs in the text), not an external
-#' bibliography, and says so (future-work review #13). Prints the result and
+#' bibliography, and says so. Prints the result and
 #' moves the cursor to the first flagged citation when a location is known.
 #'
 #' @return Invisibly, the `retraction_result`.
