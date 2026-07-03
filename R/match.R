@@ -50,11 +50,30 @@ author_overlap <- function(a, b) {
   length(intersect(family_tokens(a), family_tokens(b)))
 }
 
-#' Do two author strings share a first (leading) family token?
+#' Family name of the first author, order-robust.
+#'
+#' Handles both "Family, Given; ..." and "Given Family, ..." formats: a comma in
+#' the first author means the family name precedes it, otherwise the last token
+#' is taken as the family name.
+#' @noRd
+first_family <- function(x) {
+  x <- na_if_empty(x)
+  if (is.na(x)) return(NA_character_)
+  first <- trimws(strsplit(x, ";", fixed = TRUE)[[1L]][1L])
+  fam <- if (grepl(",", first, fixed = TRUE)) {
+    sub(",.*", "", first)
+  } else {
+    toks <- strsplit(trimws(gsub("[^[:alpha:] ]", " ", first)), "\\s+")[[1L]]
+    if (length(toks)) toks[length(toks)] else ""
+  }
+  na_if_empty(tolower(trimws(fam)))
+}
+
+#' Do two author strings share the same first-author family name?
 #' @noRd
 first_author_matches <- function(a, b) {
-  fa <- family_tokens(a); fb <- family_tokens(b)
-  length(fa) > 0 && length(fb) > 0 && identical(fa[[1L]], fb[[1L]])
+  fa <- first_family(a); fb <- first_family(b)
+  !is.na(fa) && !is.na(fb) && identical(fa, fb)
 }
 
 #' Is a no-identifier title match strong enough to assert (title_exact)?
@@ -130,7 +149,15 @@ match_reference <- function(ref, sources, ctx) {
   hits <- lapply(sources, function(s) {
     b <- get_backend(s)
     if (is.null(b)) return(NULL)
-    tryCatch(b$fn(ref, ctx), error = function(e) NULL)
+    # A backend that throws becomes a failed hit (not NULL), so the failure is
+    # represented in reconciliation and caught by strict mode rather than being
+    # silently dropped and reported as clean.
+    tryCatch(
+      b$fn(ref, ctx),
+      error = function(e) {
+        new_hit(s, b$priority, state = "failed", evidence = conditionMessage(e))
+      }
+    )
   })
 
   rec <- reconcile_sources(hits)

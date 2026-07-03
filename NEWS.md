@@ -119,8 +119,10 @@ against retraction data, and returns a tidy, scored report.
 * `retraction_knit_check()` gates a knitr/Quarto render on retracted citations.
 * An RStudio addin checks the active document; a ready-made GitHub Action
   (`inst/actions/action.yml`) fails CI on retracted citations.
-* Every `check_*()` gains `strict = TRUE`, which errors when any reference could
-  not be checked rather than returning it as `unchecked`.
+* `check_dois()`, `check_refs()`, `check_file()`, and `check_bib()` gain
+  `strict = TRUE`, which errors when a reference could not be checked (and, for
+  `check_file()`, when the file is missing or yields no references) rather than
+  returning a clean-looking result.
 
 ## Export, annotation, and queries
 

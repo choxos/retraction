@@ -276,15 +276,20 @@ crossref_verdict <- function(msg, doi) {
   ut <- vapply(pluck1(msg, "update-to") %||% list(),
                function(u) tolower(na_if_empty(pluck1(u, "type")) %||% ""),
                character(1))
-  ut <- ut[nzchar(ut)]
+  ut <- ut[!is.na(ut) & nzchar(ut)]
   if (length(ut)) {
-    label <- status_label(classify_status(gsub("_", " ", ut[1])))
+    # `update-to` order is not guaranteed chronological; prefer the most severe
+    # type so a DOI with both a retraction and a correction is labeled a
+    # retraction notice.
+    severe <- grep("retract|withdraw|removal", ut, value = TRUE)
+    chosen <- if (length(severe)) severe[1] else ut[1]
+    label <- status_label(classify_status(gsub("_", " ", chosen)))
     return(new_hit(
       "crossref", 2L, checked = TRUE, matched = TRUE, status = "none",
       doi = doi, title = title, notice_type = label, status_source = "crossref",
       matched_on = "retraction_doi", match_type = "doi_exact",
       confidence = score_match("doi_exact"),
-      evidence = paste0("update_to_", ut[1]), raw = msg
+      evidence = paste0("update_to_", chosen), raw = msg
     ))
   }
 

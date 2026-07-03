@@ -45,6 +45,7 @@ reference:
       - retraction_addin_check_active
       - retraction_app
       - fail_policy
+      - evaluate_policy
   - title: Export, annotation, and queries
     contents:
       - export_result

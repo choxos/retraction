@@ -84,7 +84,7 @@ eutils_params <- function(extra) {
 ncbi_pmid_for_doi <- function(doi) {
   res <- http_get_json(
     "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
-    eutils_params(list(db = "pubmed", term = paste0(doi, "[AID]"),
+    eutils_params(list(db = "pubmed", term = sprintf('"%s"[AID]', doi),
                        retmode = "json"))
   )
   if (is.null(res)) return(NULL)
@@ -151,9 +151,11 @@ datacite_verdict <- function(res, doi) {
   rels <- pluck1(attrs, "relatedIdentifiers") %||% list()
   rtypes <- tolower(vapply(rels, function(x) na_if_empty(pluck1(x, "relationType")) %||% "",
                            character(1)))
-  # DataCite has no dedicated retraction flag; a retraction/obsoletion relation
-  # is the best available signal for a withdrawn dataset.
-  if (any(grepl("retract|obsolet|withdraw", rtypes))) {
+  # DataCite has no dedicated retraction flag, and relations are directional.
+  # Only a passive "IsRetractedBy" / "IsObsoletedBy" / "IsWithdrawnBy" says THIS
+  # DOI was superseded; the active forms ("Obsoletes", "Retracts") mean this DOI
+  # is the replacement and must not be flagged.
+  if (any(grepl("^is(retracted|obsoleted|withdrawn)by$", rtypes))) {
     return(new_hit("datacite", 6L, checked = TRUE, matched = TRUE, status = "retracted",
                    doi = doi, title = title, nature = "Retraction",
                    notice_type = "Retraction", status_source = "datacite",

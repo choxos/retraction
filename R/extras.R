@@ -81,7 +81,13 @@ explain_result <- function(x, rows = NULL) {
   if (!inherits(x, "retraction_result")) {
     cli::cli_abort("{.arg x} must be a {.cls retraction_result}.")
   }
-  idx <- if (is.null(rows)) seq_len(nrow(x)) else which(rows)
+  idx <- if (is.null(rows)) {
+    seq_len(nrow(x))
+  } else if (is.logical(rows)) {
+    which(rows)
+  } else {
+    as.integer(rows)
+  }
   explanation <- vapply(idx, function(i) {
     r <- x[i, ]
     if (!isTRUE(r$matched)) {
@@ -119,8 +125,9 @@ explain_result <- function(x, rows = NULL) {
 #' dissented. Meaningful only when more than one source was queried.
 #'
 #' @param x A [`retraction_result`][print.retraction_result].
-#' @return A [tibble][tibble::tibble] of the disagreeing rows (`id`, `doi`,
-#'   `status`, `confirmed_by`, `dissenting`); zero rows when all sources agree.
+#' @return A [tibble][tibble::tibble] of the disagreeing rows (`id`,
+#'   `identifier`, `status`, `confirmed_by`, `dissenting`); zero rows when all
+#'   sources agree.
 #' @examples
 #' \donttest{
 #' res <- check_dois("10.1016/S0140-6736(97)11096-0",
@@ -133,9 +140,13 @@ compare_sources <- function(x) {
     cli::cli_abort("{.arg x} must be a {.cls retraction_result}.")
   }
   keep <- x$disagreement %in% TRUE
+  # Fall back to PMID (or id) so a PMID-only disagreement is still identifiable.
+  ident <- ifelse(!is.na(x$doi[keep]), x$doi[keep],
+                  ifelse(!is.na(x$pmid[keep]), paste0("pmid:", x$pmid[keep]),
+                         x$id[keep]))
   tibble::tibble(
     id = x$id[keep],
-    doi = x$doi[keep],
+    identifier = ident,
     status = x$status[keep],
     confirmed_by = x$sources[keep],
     dissenting = x$disagreeing[keep]

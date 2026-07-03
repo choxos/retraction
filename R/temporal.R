@@ -55,7 +55,7 @@ classify_timing <- function(x, document_date = Sys.Date(), citation_dates = NULL
 #' @export
 manuscript_date_of <- function(path) {
   d <- tryCatch({
-    out <- suppressWarnings(system2("git", c("log", "-1", "--format=%cs", "--", shQuote(path)),
+    out <- suppressWarnings(system2("git", c("log", "-1", "--format=%cs", "--", path),
                                     stdout = TRUE, stderr = FALSE))
     if (length(out) && nzchar(out[1])) as.Date(out[1]) else NA
   }, error = function(e) NA)

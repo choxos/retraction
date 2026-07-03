@@ -31,17 +31,27 @@ server <- function(input, output, session) {
     ext <- tools::file_ext(input$file$name)
     if (nzchar(ext)) {
       withext <- paste0(path, ".", ext)
-      file.copy(path, withext, overwrite = TRUE)
-      path <- withext
+      if (file.copy(path, withext, overwrite = TRUE)) path <- withext
     }
     shiny::withProgress(message = "Checking references...", {
-      retraction::check_file(path, offline = isTRUE(input$offline), progress = FALSE)
+      tryCatch(
+        retraction::check_file(path, offline = isTRUE(input$offline), progress = FALSE),
+        error = function(e) {
+          shiny::showNotification(paste("Could not check file:", conditionMessage(e)),
+                                  type = "error", duration = NULL)
+          NULL
+        }
+      )
     })
   })
 
-  output$summary <- shiny::renderPrint(print(result()))
+  output$summary <- shiny::renderPrint({
+    shiny::req(result())
+    print(result())
+  })
 
   output$table <- DT::renderDT({
+    shiny::req(result())
     df <- as.data.frame(result())
     cols <- intersect(c("id", "doi", "pmid", "status", "is_retracted", "confidence",
                         "matched_title", "journal", "retraction_date", "reason",

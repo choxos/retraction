@@ -21,7 +21,18 @@ suggest_alternatives <- function(doi) {
   if (is.na(ndoi)) cli::cli_abort("{.arg doi} is not a valid DOI.")
   items <- xera_search_doi(ndoi)
   if (is.null(items) || !length(items)) return(NULL)
-  rid <- na_if_empty(pluck1(items[[1L]], "record_id"))
+  # The search is a substring match, so pick the record whose original DOI is
+  # exactly this DOI rather than assuming the first hit is the right one.
+  match_item <- NULL
+  for (it in items) {
+    if (identical(normalize_doi(pluck1(it, "original_paper_doi") %||% NA_character_),
+                  ndoi)) {
+      match_item <- it
+      break
+    }
+  }
+  if (is.null(match_item)) return(NULL)
+  rid <- na_if_empty(pluck1(match_item, "record_id"))
   if (is.na(rid)) return(NULL)
   res <- xera_get(paste0("papers/", utils::URLencode(as.character(rid)), "/related"))
   rel <- pluck1(res, "related_papers")

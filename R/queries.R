@@ -14,20 +14,23 @@
 #'   with more pages available (results truncated).
 #' @noRd
 xera_search_all <- function(query, per_page = 100L, max_pages = 200L) {
-  page <- 1L; frames <- list(); total_pages <- 1L
+  page <- 1L; frames <- list(); more <- FALSE
   repeat {
     res <- xera_get("search/advanced", c(query, list(per_page = per_page, page = page)))
-    items <- pluck1(res, "items")
-    if (is.null(items) || !length(items)) break
+    items <- pluck1(res, "items") %||% list()
+    n <- length(items)
+    if (!n) break
     frames[[length(frames) + 1L]] <- papers_items_to_df(items)
-    total_pages <- suppressWarnings(as.integer(pluck1(res, "total_pages") %||% 1L))
-    if (is.na(total_pages) || page >= total_pages || page >= max_pages) break
+    total_pages <- suppressWarnings(as.integer(pluck1(res, "total_pages") %||% NA))
+    # When total_pages is reported, use it; otherwise infer "more" from a full page.
+    more <- if (!is.na(total_pages)) page < total_pages else n >= per_page
+    if (!more || page >= max_pages) break
     page <- page + 1L
   }
-  if (!is.na(total_pages) && total_pages > max_pages) {
+  if (isTRUE(more) && page >= max_pages) {
     cli::cli_alert_warning(paste0(
-      "Results truncated at {max_pages * per_page} rows ",
-      "({total_pages} pages available). Raise {.arg max_pages}."
+      "Results truncated at {max_pages * per_page} rows; ",
+      "more may exist. Raise {.arg max_pages}."
     ))
   }
   if (length(frames)) rbind_union(frames) else NULL

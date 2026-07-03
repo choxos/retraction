@@ -77,13 +77,27 @@ check_zotero <- function(path = zotero_default_db(),
     }
   )
   on.exit(DBI::dbDisconnect(con), add = TRUE)
-  rows <- DBI::dbGetQuery(con, paste(
-    "SELECT d.itemID AS itemID, f.fieldName AS field, v.value AS value",
-    "FROM itemData d",
-    "JOIN itemDataValues v ON v.valueID = d.valueID",
-    "JOIN fieldsCombined f ON f.fieldID = d.fieldID",
-    "WHERE f.fieldName IN ('DOI', 'title', 'date')"
-  ))
+  # `fieldsCombined` is the usual view, but fall back to `fields` if a schema
+  # variant lacks it, rather than silently returning zero rows.
+  zotero_query <- function(tbl) {
+    paste(
+      "SELECT d.itemID AS itemID, f.fieldName AS field, v.value AS value",
+      "FROM itemData d",
+      "JOIN itemDataValues v ON v.valueID = d.valueID",
+      sprintf("JOIN %s f ON f.fieldID = d.fieldID", tbl),
+      "WHERE f.fieldName IN ('DOI', 'title', 'date')"
+    )
+  }
+  rows <- tryCatch(
+    DBI::dbGetQuery(con, zotero_query("fieldsCombined")),
+    error = function(e) {
+      tryCatch(DBI::dbGetQuery(con, zotero_query("fields")),
+               error = function(e2) NULL)
+    }
+  )
+  if (is.null(rows)) {
+    cli::cli_abort("Could not read item fields; unrecognized Zotero schema.")
+  }
   df <- zotero_items_to_df(rows)
   if (!nrow(df)) {
     cli::cli_warn("No DOIs or titles found in the Zotero library.")

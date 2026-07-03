@@ -10,8 +10,9 @@ compare_sources(x)
 \item{x}{A \code{\link[=print.retraction_result]{retraction_result}}.}
 }
 \value{
-A \link[tibble:tibble]{tibble} of the disagreeing rows (\code{id}, \code{doi},
-\code{status}, \code{confirmed_by}, \code{dissenting}); zero rows when all sources agree.
+A \link[tibble:tibble]{tibble} of the disagreeing rows (\code{id},
+\code{identifier}, \code{status}, \code{confirmed_by}, \code{dissenting}); zero rows when all
+sources agree.
 }
 \description{
 The rows where the selected sources disagreed, with which confirmed and which

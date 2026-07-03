@@ -217,3 +217,88 @@ test_that("the offline DOI index matches and fast-rejects", {
   expect_equal(snapshot_hit(snap, as_reference(doi = "10.1/x"), ctx)$status, "retracted")
   expect_null(snapshot_hit(snap, as_reference(doi = "10.9/z"), ctx))
 })
+
+## Audit-3 regression tests -------------------------------------------------
+
+test_that("a throwing backend is recorded as a failure and strict errors cleanly", {
+  register_backend("boomtest", function(ref, ctx) stop("boom"), priority = 1L)
+  withr::defer(rm(list = "boomtest", envir = .backend_registry))
+  res <- check_dois("10.1/x", sources = "boomtest", progress = FALSE)
+  expect_equal(res$status, "unchecked")           # failure represented, not clean
+  err <- tryCatch(
+    check_dois("10.1/x", sources = "boomtest", strict = TRUE, progress = FALSE),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(err, "could not be checked")
+  expect_false(grepl("pluralize", err))            # cli quantity fix
+})
+
+test_that("check_file strict errors on a missing file and an empty parse", {
+  expect_error(check_file("definitely-missing.bib", strict = TRUE, progress = FALSE),
+               "not found")
+  empty <- tempfile(fileext = ".txt"); writeLines("no identifiers here", empty)
+  expect_error(check_file(empty, strict = TRUE, progress = FALSE), "No references")
+})
+
+test_that("crossref_verdict ignores an update-to entry that has no type", {
+  v <- crossref_verdict(list(title = list("Plain work"),
+                             `update-to` = list(list(DOI = "10.1/orig"))), "10.1/n")
+  expect_false(v$matched)
+})
+
+test_that("datacite_verdict respects relation direction", {
+  passive <- list(data = list(attributes = list(titles = list(list(title = "D")),
+    relatedIdentifiers = list(list(relationType = "IsObsoletedBy")))))
+  expect_equal(datacite_verdict(passive, "10.5/d")$status, "retracted")
+  active <- list(data = list(attributes = list(titles = list(list(title = "D")),
+    relatedIdentifiers = list(list(relationType = "Obsoletes")))))
+  expect_false(datacite_verdict(active, "10.5/d")$matched)
+})
+
+test_that("explain_result accepts integer row indices", {
+  x <- res(row(id = "a", matched = TRUE, is_retracted = TRUE, status = "retracted",
+               matched_on = "original_doi", confidence = 1), row(id = "b"))
+  ex <- explain_result(x, rows = 1L)
+  expect_equal(nrow(ex), 1L)
+  expect_equal(ex$id, "a")
+})
+
+test_that("title_exact matching is robust to author name order", {
+  items <- list(list(title = "A distinctive study of ostriches in winter light",
+                     original_paper_doi = "10.1/x", original_paper_date = "2010-01-01",
+                     author = "Smith, John", retraction_nature = "Retraction",
+                     record_id = "R1"))
+  ref <- as_reference(title = "A distinctive study of ostriches in winter light",
+                      year = 2010, author = "John Smith")
+  expect_equal(fuzzy_hit_from_items(items, ref)$match_type, "title_exact")
+})
+
+test_that("check_included_studies dedupes and reports counts", {
+  register_backend("faketest", function(ref, ctx) {
+    if (identical(ref$doi, "10.1234/retracted")) {
+      build_xera_hit(list(retraction_nature = "Retraction",
+                          original_paper_doi = "10.1234/retracted", record_id = "R",
+                          title = "T", retraction_date = "2010-01-01"),
+                     matched_on = "original_doi")
+    } else {
+      new_hit("faketest", 1L, checked = TRUE)
+    }
+  }, priority = 1L)
+  withr::defer(rm(list = "faketest", envir = .backend_registry))
+  r <- check_included_studies(c("10.1234/retracted", "10.1234/clean", "10.1234/clean"),
+                              sources = "faketest", resolve_ids = FALSE, progress = FALSE)
+  expect_s3_class(r, "retraction_review")
+  expect_equal(attr(r, "n_included"), 3L)
+  expect_equal(attr(r, "n_unique"), 2L)
+  expect_equal(attr(r, "n_retracted"), 1L)
+})
+
+test_that("retraction_knit_check fails closed on a missing bibliography", {
+  expect_error(retraction_knit_check(bib = "definitely-missing.bib", action = "error"),
+               "cannot read")
+})
+
+test_that("manuscript_date_of falls back to file mtime", {
+  f <- tempfile(); writeLines("x", f)
+  expect_s3_class(manuscript_date_of(f), "Date")
+})
