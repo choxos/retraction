@@ -25,3 +25,4 @@
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
 ^\.lintr$
+^tests/testthat/mock-

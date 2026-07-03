@@ -1,0 +1,50 @@
+{
+    "items": [
+        {
+            "id": 64218,
+            "record_id": "4036",
+            "title": "Ileal-lymphoid-nodular Hyperplasia, Non-specific Colitis, and Pervasive Developmental Disorder in Children",
+            "original_paper_doi": "10.1016/S0140-6736(97)11096-0",
+            "retraction_doi": "10.1016/S0140-6736(10)60175-4",
+            "original_paper_pubmed_id": "9500320",
+            "retraction_pubmed_id": "20137807",
+            "journal": "Lancet",
+            "author": "Andrew J Wakefield;Simon Harry Murch;A Anthony;J Linnell;D M Casson;M Malik;M Berelowitz;A P Dhillon;M A Thomson;P Harvey;A Valentine;S E Davies;John Angus Walker-Smith",
+            "retraction_date": "2010-02-06T00:00:00.000Z",
+            "retraction_nature": "Retraction",
+            "citation_count": 195,
+            "country": "United Kingdom",
+            "subject": "(BLS) Biology - Cancer;(BLS) Biology - Cellular;(BLS) Neuroscience;(HSC) Medicine - Immunology;(HSC) Medicine - Neurology;(HSC) Medicine - Pediatrics;",
+            "publisher": "Elsevier"
+        },
+        {
+            "id": 51102,
+            "record_id": "17269",
+            "title": "Ileal-lymphoid-nodular Hyperplasia, Non-specific Colitis, and Pervasive Developmental Disorder in Children",
+            "original_paper_doi": "10.1016/S0140-6736(97)11096-0",
+            "retraction_doi": "10.1016/S0140-6736(04)15715-2",
+            "original_paper_pubmed_id": "9500320",
+            "retraction_pubmed_id": "15016483",
+            "journal": "Lancet",
+            "author": "Andrew J Wakefield;Simon Harry Murch;A Anthony;J Linnell;D M Casson;M Malik;M Berelowitz;A P Dhillon;M A Thomson;P Harvey;A Valentine;S E Davies;John Angus Walker-Smith",
+            "retraction_date": "2004-03-06T00:00:00.000Z",
+            "retraction_nature": "Correction",
+            "citation_count": 2166,
+            "country": "United Kingdom",
+            "subject": "(BLS) Biology - Cancer;(BLS) Biology - Cellular;(BLS) Neuroscience;(HSC) Medicine - Immunology;(HSC) Medicine - Neurology;(HSC) Medicine - Pediatrics;",
+            "publisher": "Elsevier"
+        }
+    ],
+    "total": 2,
+    "page": 1,
+    "per_page": 100,
+    "total_pages": 1,
+    "query": {
+        "q": null,
+        "title": null,
+        "author": null,
+        "journal": null,
+        "doi": "10.1016/s0140-6736(97)11096-0",
+        "pubmed_id": null
+    }
+}

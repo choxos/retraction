@@ -9,12 +9,15 @@
 # Bump when the baseline schema changes; a mismatched baseline is refused.
 WATCH_SCHEMA_VERSION <- 1L
 
-#' Stable per-row key: normalized DOI, else PMID, else the display id.
+#' Stable per-row key: normalized DOI, else PMID, else the normalized title.
+#'
+#' For a title-only reference the id is title-derived; normalizing it keeps the
+#' key stable across minor title-formatting differences between runs.
 #' @noRd
 watch_key <- function(res) {
   ifelse(!is.na(res$doi), paste0("doi:", res$doi),
          ifelse(!is.na(res$pmid), paste0("pmid:", res$pmid),
-                paste0("id:", res$id)))
+                paste0("title:", normalize_title(res$id))))
 }
 
 #' Path to a named watch file under the package cache.

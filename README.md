@@ -8,6 +8,7 @@
 [![Codecov test coverage](https://codecov.io/gh/choxos/retraction/graph/badge.svg)](https://app.codecov.io/gh/choxos/retraction)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![DOI](https://zenodo.org/badge/1287288514.svg)](https://zenodo.org/badge/latestdoi/1287288514)
 <!-- badges: end -->
 
 `retraction` scans your manuscripts, bibliographies, and reference lists for

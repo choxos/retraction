@@ -1,0 +1,17 @@
+structure(list(method = "GET", url = "https://api.datacite.org/dois/10.1016/s0140-6736(97)11096-0", 
+    status_code = 404L, headers = structure(list(date = "Fri, 03 Jul 2026 10:58:41 GMT", 
+        `content-type` = "application/json; charset=utf-8", status = "404 Not Found", 
+        `cache-control` = "no-cache", vary = "Accept,Accept-Encoding", 
+        `content-encoding` = "gzip", `referrer-policy` = "strict-origin-when-cross-origin", 
+        `x-permitted-cross-domain-policies` = "none", `x-xss-protection` = "0", 
+        `x-request-id` = "c24499c4-68f8-490d-b270-5b61a41135af", 
+        `x-runtime` = "0.003058", `x-frame-options` = "SAMEORIGIN", 
+        `x-content-type-options` = "nosniff", `x-powered-by` = "Phusion Passenger(R) 6.1.2", 
+        server = "nginx/1.24.0 + Phusion Passenger(R) 6.1.2", 
+        `access-control-allow-credentials` = "true", `access-control-allow-methods` = "GET, POST, PUT, PATCH, DELETE, OPTIONS", 
+        `access-control-allow-headers` = "Accept,Access-Control-Allow-Origin,Access-Control-Expose-Headers,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Mx-ReqToken,X-Requested-With", 
+        `access-control-expose-headers` = "Authorization", `x-lupoversion` = "5.72.0"), class = "httr2_headers"), 
+    body = charToRaw("{\"errors\":[{\"status\":\"404\",\"title\":\"The resource you are looking for doesn't exist.\"}]}"), 
+    timing = c(redirect = 0, namelookup = 0.031767, connect = 0.126592, 
+    pretransfer = 0.406126, starttransfer = 0.506931, total = 0.507096
+    ), cache = new.env(parent = emptyenv())), class = "httr2_response")
