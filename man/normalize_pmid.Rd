@@ -13,8 +13,11 @@ normalize_pmid(x)
 A character vector of digit-only PMIDs, \code{NA} where none is present.
 }
 \description{
-Normalize a PubMed identifier to bare digits.
+Accepts an optional \verb{PMID:} prefix. Input that is not a bare run of digits
+after the prefix is rejected as \code{NA} rather than coerced, so a PMCID or DOI
+placed in a PMID field is not silently turned into a fabricated PMID.
 }
 \examples{
 normalize_pmid("PMID: 12345678")
+normalize_pmid("PMC12345")  # NA: a PMCID is not a PMID
 }

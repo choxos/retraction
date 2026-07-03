@@ -46,7 +46,9 @@ detect_col <- function(names, candidates) {
     if (length(hit)) return(names[hit[1L]])
   }
   for (c in candidates) {
-    hit <- which(startsWith(low, c))
+    # Prefix match, but only at a separator boundary so "doix" does not match
+    # "doi" while "doi_url" still does.
+    hit <- which(grepl(paste0("^", c, "([^[:alnum:]]|$)"), low))
     if (length(hit)) return(names[hit[1L]])
   }
   NULL

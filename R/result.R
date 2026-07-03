@@ -6,8 +6,8 @@ RESULT_COLS <- c(
   "id", "input_type", "query", "doi", "pmid", "matched", "status",
   "is_retracted", "confidence", "match_type", "matched_on", "nature",
   "record_id", "matched_title", "journal", "retraction_date",
-  "days_since_retraction", "reason", "sources", "disagreement",
-  "source_file", "location"
+  "days_since_retraction", "reason", "sources", "disagreement", "disagreeing",
+  "checked_at", "source_file", "location"
 )
 
 #' Assemble result rows into a classed tibble.
@@ -29,7 +29,8 @@ rows_to_tibble <- function(rows) {
       record_id = character(), matched_title = character(), journal = character(),
       retraction_date = as.Date(character()),
       days_since_retraction = integer(), reason = character(),
-      sources = character(), disagreement = logical(),
+      sources = character(), disagreement = logical(), disagreeing = character(),
+      checked_at = as.Date(character()),
       source_file = character(), location = character()
     )
     return(tbl)
@@ -72,6 +73,7 @@ rows_to_tibble <- function(rows) {
     journal = chr("journal"), retraction_date = datec("retraction_date"),
     days_since_retraction = intg("days_since_retraction"), reason = chr("reason"),
     sources = chr("sources"), disagreement = lgl("disagreement"),
+    disagreeing = chr("disagreeing"), checked_at = datec("checked_at"),
     source_file = chr("source_file"), location = chr("location")
   )
 }
@@ -103,14 +105,30 @@ retracted <- function(x, which = c("flagged", "possible", "all_matched")) {
   out
 }
 
+# Rows matched to a record but not flagged: corrections, reinstatements, cited
+# retraction notices (matched with status "none"), and unrecognized notice
+# types. These are informational, not clean.
+#' @noRd
+notice_rows <- function(x) {
+  keep <- x$matched %in% TRUE & !(x$is_retracted %in% TRUE) &
+    !(x$status %in% c("retracted", "expression_of_concern"))
+  out <- x[keep, , drop = FALSE]
+  if (!inherits(out, "retraction_result")) class(out) <- c("retraction_result", class(out))
+  out
+}
+
+#' Counts computed as direct predicates (not by subtraction) so a new status can
+#' never silently fall into the "clean" bucket.
 #' @noRd
 result_counts <- function(x) {
+  matched <- x$matched %in% TRUE
   flagged <- sum(x$is_retracted %in% TRUE)
-  possible <- sum(x$matched %in% TRUE & !(x$is_retracted %in% TRUE) &
+  possible <- sum(matched & !(x$is_retracted %in% TRUE) &
                     x$status %in% c("retracted", "expression_of_concern"))
-  notice <- sum(x$status %in% c("correction", "reinstated"))
+  notice <- sum(matched & !(x$is_retracted %in% TRUE) &
+                  !(x$status %in% c("retracted", "expression_of_concern")))
   unchecked <- sum(x$status %in% "unchecked")
-  clean <- nrow(x) - flagged - possible - notice - unchecked
+  clean <- sum(!matched & x$status %in% "none")
   list(n = nrow(x), flagged = flagged, possible = possible, notice = notice,
        clean = clean, unchecked = unchecked)
 }

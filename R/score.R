@@ -79,7 +79,10 @@ score_match <- function(match_type, title_sim = NA_real_,
       if (!is.na(author_overlap)) {
         adj <- adj + if (author_overlap > 0) 0.03 else -0.05
       }
-      max(0, min(0.94, base + adj))
+      # Cap strictly below the default confidence threshold so a fuzzy match is
+      # never displayed at a "flagged" confidence, complementing the hard guard
+      # in finalize_row that keeps fuzzy matches out of the flagged set.
+      max(0, min(0.89, base + adj))
     },
     0.0
   )

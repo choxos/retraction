@@ -87,10 +87,22 @@ options(retraction.sources = c("xera", "openalex"))   # set a session default
 ```
 
 When several sources are queried, the highest-priority match sets the verdict,
-every confirming source is recorded, and a `disagreement` flag is raised when
-sources do not agree.
+every confirming source is recorded (with dissenters in `disagreeing`), and a
+`disagreement` flag is raised when sources do not agree.
+
+Two caveats worth knowing:
+
+- OpenAlex's `is_retracted` flag is itself derived from Retraction Watch, so
+  Xera and OpenAlex are not fully independent; a disagreement between them
+  usually reflects OpenAlex lagging rather than a genuine conflict.
+- Crossref and OpenAlex detect retractions only. Corrections, expressions of
+  concern, and reinstatements come from the Retraction Watch (`xera`) source.
 
 ## Offline and private use
+
+Offline mode is fully local: it does not contact the network. (An optional
+staleness notice is available with `options(retraction.check_freshness = TRUE)`,
+which makes one small request during offline checks.)
 
 For bulk checking, privacy (checking an unpublished manuscript sends only DOIs),
 or working without a connection, build a local snapshot once and match against
@@ -116,12 +128,17 @@ render_report(result, "report.md", format = "md")
 
 ## How matching works
 
-Matching runs a strict cascade: exact DOI, then PMID (resolved to a DOI via
-OpenAlex, since the Retraction Watch API cannot be queried by PMID), then fuzzy
-title matching for references that carry no identifier. Exact identifier matches
-are asserted with high confidence; fuzzy matches are reported as "possible" so
-you can verify them. Fuzzy and PMID matching are most reliable in offline mode,
-where the full corpus is available locally.
+Within a source, matching runs a cascade: exact DOI, then PMID (resolved to a
+DOI via OpenAlex, since the Retraction Watch API cannot be queried by PMID), then
+fuzzy title matching for references that carry no identifier. When several
+sources are selected they are all queried and their verdicts reconciled. Exact
+identifier matches are asserted with high confidence; fuzzy matches are reported
+as "possible" so you can verify them, and are never asserted as retracted. Fuzzy
+and PMID matching are most reliable in offline mode, where the full corpus is
+available locally.
+
+The `confidence` column is a match-quality heuristic (exact identifier vs. fuzzy
+title, adjusted for year and author agreement), not a calibrated probability.
 
 A citation of a retraction *notice* (rather than of the retracted work) is
 recognized and not flagged. A work that was retracted and later reinstated is
@@ -134,7 +151,8 @@ Retraction data comes from the
 through [Crossref](https://gitlab.com/crossref/retraction-watch-data) and served
 by [XeraRetractionTracker](https://openscience.xera.ac/retractions). The optional
 Crossref and OpenAlex backends use their public APIs; OpenAlex's `is_retracted`
-flag is itself derived from Retraction Watch. See `LICENSE.note` for details.
+flag is itself derived from Retraction Watch. See `LICENSE.note` in the source
+repository for details.
 
 ## Use of AI
 

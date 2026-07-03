@@ -58,6 +58,47 @@ xera_export_slice <- function(year_from = NULL, year_to = NULL, limit = 10000L) 
   out
 }
 
+# Columns the snapshot needs, matching the export CSV.
+SNAPSHOT_COLS <- c(
+  "record_id", "title", "original_paper_doi", "retraction_doi", "journal",
+  "publisher", "author", "original_paper_date", "retraction_date",
+  "retraction_nature", "reason", "subject", "country", "citation_count",
+  "is_open_access"
+)
+
+#' Build a snapshot-shaped data frame from `/papers` list items.
+#' @noRd
+papers_items_to_df <- function(items) {
+  if (!length(items)) return(NULL)
+  cols <- lapply(SNAPSHOT_COLS, function(k) {
+    vapply(items, function(it) na_if_empty(pluck1(it, k)) %||% NA_character_,
+           character(1))
+  })
+  names(cols) <- SNAPSHOT_COLS
+  as.data.frame(cols, stringsAsFactors = FALSE)
+}
+
+#' Fetch a full retraction year via the paginated `/papers` endpoint.
+#'
+#' Used as a fallback when a single year exceeds the 10,000-row export cap, so
+#' no records are silently truncated. `/papers` is not rate-limited and paginates
+#' with `page`/`per_page`.
+#' @noRd
+xera_papers_year <- function(year, per_page = 100L, max_pages = 10000L) {
+  page <- 1L; frames <- list()
+  repeat {
+    res <- xera_get("papers", list(year_from = year, year_to = year,
+                                   per_page = per_page, page = page))
+    items <- pluck1(res, "items")
+    if (is.null(items) || !length(items)) break
+    frames[[length(frames) + 1L]] <- papers_items_to_df(items)
+    total_pages <- suppressWarnings(as.integer(pluck1(res, "total_pages") %||% 1L))
+    if (is.na(total_pages) || page >= total_pages || page >= max_pages) break
+    page <- page + 1L
+  }
+  if (length(frames)) do.call(rbind, frames) else NULL
+}
+
 ## ---------------------------------------------------------------------------
 ## Crossref
 ## ---------------------------------------------------------------------------
@@ -76,7 +117,7 @@ crossref_work <- function(doi) {
 ## OpenAlex
 ## ---------------------------------------------------------------------------
 
-OPENALEX_SELECT <- "id,doi,display_name,publication_year,is_retracted,ids"
+OPENALEX_SELECT <- "id,doi,display_name,type,publication_year,is_retracted,ids"
 
 #' Fetch an OpenAlex work by DOI.
 #' @noRd
