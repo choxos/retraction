@@ -7,10 +7,14 @@ This is the first submission of 'retraction' to CRAN.
 0 errors | 0 warnings | 1 note
 
 * This is a new submission.
+* The NOTE additionally lists possibly-misspelled words in DESCRIPTION. These
+  are bibliographic format names and proper nouns (BibLaTeX, CSL, EndNote,
+  JATS, RIS, XeraRetractionTracker) plus the correctly-spelled word "lookups".
 
 ## Test environments
 
 * local macOS, R 4.6.0
+* win-builder (R release 4.6.1 and R-devel)
 * GitHub Actions: macOS (release), Windows (release), Ubuntu (devel, release,
   oldrel-1)
 
