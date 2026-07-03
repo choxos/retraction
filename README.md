@@ -75,14 +75,16 @@ retracted(res)      # the retracted references found
 ## Multiple sources
 
 Every `check_*()` function takes a `sources` argument. The default is `"xera"`
-(Retraction Watch). You can query more than one source and have the results
-reconciled:
+(Retraction Watch). Also available: `"crossref"`, `"openalex"`, `"europepmc"`,
+`"ncbi"` (PubMed), `"datacite"`, and `"preprint"` (arXiv/bioRxiv withdrawals).
+You can query more than one, or `"all"`, and have the results reconciled:
 
 ``` r
 check_dois("10.1016/S0140-6736(97)11096-0",
-           sources = c("xera", "crossref", "openalex"))
+           sources = c("xera", "europepmc", "ncbi"))
 
 list_backends()          # available sources
+check_dois("10.1126/science.aac4716", sources = "all")
 options(retraction.sources = c("xera", "openalex"))   # set a session default
 ```
 

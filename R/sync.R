@@ -191,14 +191,32 @@ retraction_sync <- function(force = FALSE, incremental = TRUE, quiet = FALSE) {
 #' Load the local snapshot, or NULL if none exists.
 #' @noRd
 load_snapshot <- function(reload = FALSE) {
-  if (!reload && !is.null(.snapshot_cache$data)) return(.snapshot_cache$data)
-  path <- snapshot_path()
-  if (!file.exists(path)) return(NULL)
-  snap <- tryCatch(readRDS(path), error = function(e) NULL)
-  if (!is.null(snap) && (is.null(snap$norm_odoi) || is.null(snap$norm_opmid))) {
-    snap <- add_norm_columns(snap)
+  if (!reload && !is.null(.snapshot_cache$data)) {
+    snap <- .snapshot_cache$data
+  } else {
+    path <- snapshot_path()
+    if (!file.exists(path)) return(NULL)
+    snap <- tryCatch(readRDS(path), error = function(e) NULL)
+    if (!is.null(snap) && (is.null(snap$norm_odoi) || is.null(snap$norm_opmid))) {
+      snap <- add_norm_columns(snap)
+    }
   }
-  .snapshot_cache$data <- snap
+  if (is.null(snap)) return(NULL)
+  # Build the original-DOI hash index once, so the offline DOI lookup is O(1)
+  # instead of an O(n) scan of the whole corpus for every reference.
+  if (is.null(attr(snap, "doi_index"))) {
+    snap <- attach_doi_index(snap)
+    .snapshot_cache$data <- snap
+  }
+  snap
+}
+
+#' Attach an environment mapping normalized original DOI -> row indices.
+#' @noRd
+attach_doi_index <- function(snap) {
+  if (is.null(snap) || !nrow(snap)) return(snap)
+  by_doi <- split(seq_len(nrow(snap)), snap$norm_odoi)  # NA keys are dropped
+  attr(snap, "doi_index") <- list2env(by_doi, hash = TRUE, parent = emptyenv())
   snap
 }
 
@@ -287,7 +305,12 @@ snapshot_hit <- function(snap, ref, ctx) {
   if (is.null(snap) || !nrow(snap)) return(NULL)
 
   if (is_nonempty_string(ref$doi)) {
-    idx <- which(snap$norm_odoi == ref$doi)
+    index <- attr(snap, "doi_index")
+    idx <- if (!is.null(index)) {
+      get0(ref$doi, envir = index, inherits = FALSE) %||% integer(0)
+    } else {
+      which(snap$norm_odoi == ref$doi)
+    }
     if (length(idx)) {
       items <- lapply(idx, function(i) snap_row_to_item(snap[i, ]))
       return(build_xera_hit(pick_governing(items), matched_on = "original_doi"))

@@ -44,12 +44,20 @@ test_that("a retraction is not suppressed by a higher-priority correction", {
   expect_true(rec$disagreement)
 })
 
-test_that("crossref_verdict does not flag a notice via update-to metadata", {
+test_that("crossref_verdict recognizes an update notice but does not flag it", {
   msg <- list(title = list("Retraction notice"),
               `update-to` = list(list(type = "retraction", DOI = "10.1/orig")))
-  expect_false(crossref_verdict(msg, "10.1/notice")$matched)
-  # But a RETRACTED: title prefix on the work itself still flags it.
-  expect_true(crossref_verdict(list(title = list("RETRACTED: bad")), "10.1/x")$matched)
+  v <- crossref_verdict(msg, "10.1/notice")
+  # The notice DOI is recognized (citing the notice), but status is not flagged.
+  expect_equal(v$status, "none")
+  expect_equal(v$matched_on, "retraction_doi")
+  # A correction notice is likewise recognized as a (non-flagged) notice.
+  corr <- crossref_verdict(list(title = list("Correction to X"),
+                                `update-to` = list(list(type = "correction"))), "10.1/c")
+  expect_equal(corr$notice_type, "Correction")
+  # A RETRACTED: title prefix on the work itself still flags it.
+  expect_equal(crossref_verdict(list(title = list("RETRACTED: bad")), "10.1/x")$status,
+               "retracted")
 })
 
 test_that("a fuzzy title match is never asserted as retracted", {

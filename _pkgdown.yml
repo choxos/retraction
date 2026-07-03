@@ -12,6 +12,8 @@ reference:
       - check_bib
       - check_dois
       - check_refs
+      - check_zotero
+      - check_preprint
   - title: PubMed Central
     contents:
       - check_pmc
@@ -41,6 +43,7 @@ reference:
       - retraction_main
       - retraction_knit_check
       - retraction_addin_check_active
+      - retraction_app
       - fail_policy
   - title: Export, annotation, and queries
     contents:
@@ -67,6 +70,7 @@ reference:
       - retraction_sync
       - retraction_cache_dir
       - retraction_clear_cache
+      - retraction_snapshot_parquet
   - title: Identifiers
     contents:
       - normalize_doi

@@ -31,11 +31,15 @@ against retraction data, and returns a tidy, scored report.
 ## Sources and reconciliation
 
 * Retraction data comes from pluggable sources: `"xera"` (Retraction Watch via
-  the XeraRetractionTracker API, the default), `"crossref"`, and `"openalex"`.
-  `list_backends()` lists them.
+  the XeraRetractionTracker API, the default), `"crossref"`, `"openalex"`,
+  `"europepmc"`, `"ncbi"` (PubMed), `"datacite"`, and `"preprint"` (arXiv and
+  bioRxiv withdrawals). `list_backends()` lists them; `sources = "all"` queries
+  every one.
 * Any `check_*()` call can query several sources at once. The highest-priority
   match sets the verdict, every confirming source is recorded, and a
   disagreement flag is raised when sources do not agree.
+* The Crossref source now recognizes corrections and expressions of concern
+  (via `update-to`), not only retractions.
 
 ## Matching
 
@@ -46,6 +50,20 @@ against retraction data, and returns a tidy, scored report.
 * Exact identifier matches are asserted with high confidence; fuzzy matches are
   reported as possible so you can verify them. A citation of a retraction notice
   is not flagged, and a work that was later reinstated is reported as reinstated.
+* Title normalization now folds accents, ligatures, full-width forms, and
+  non-Latin scripts (via stringi), so non-English titles match more reliably.
+
+## More inputs, scale, and interfaces
+
+* `check_zotero()` scans a Zotero library directly from its database.
+* `check_preprint()` reports whether an arXiv or bioRxiv preprint was withdrawn.
+* `retraction_app()` launches a Shiny triage app to upload a file and browse
+  results interactively.
+* The HTML report is now sortable and filterable in the browser (self-contained,
+  no external assets).
+* Offline matching uses an in-memory hash index for O(1) DOI lookups;
+  `retraction_snapshot_parquet()` exports the corpus for arrow-based analysis;
+  and checking parallelizes across references when a `future` plan is set.
 
 ## Offline snapshot
 
