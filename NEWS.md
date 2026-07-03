@@ -4,7 +4,7 @@ First release. `retraction` scans manuscripts, bibliographies, and reference
 lists for citations to retracted publications, so authors can find and remove
 citations to retracted work before submitting. It reads a wide range of document
 and bibliography formats, extracts and normalizes identifiers, checks them
-against retraction data, and returns a tidy, confidence-scored report.
+against retraction data, and returns a tidy, scored report.
 
 ## Checking documents and bibliographies
 
@@ -52,8 +52,9 @@ against retraction data, and returns a tidy, confidence-scored report.
   bulk checking, privacy, and offline use. Updates are incremental, adding new
   retractions rather than re-downloading everything.
 * `retraction_cache_dir()` reports where the snapshot lives, and
-  `retraction_clear_cache()` removes it. Offline checks warn when the snapshot
-  has fallen behind the live database.
+  `retraction_clear_cache()` removes it. Offline mode is fully local by default;
+  an optional notice (`options(retraction.check_freshness = TRUE)`) warns when
+  the snapshot has fallen behind the live database.
 
 ## Results and reports
 
