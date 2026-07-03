@@ -39,7 +39,9 @@ family_tokens <- function(x) {
   if (is.na(x)) return(character(0))
   x <- gsub("[^a-z; ,]", " ", x)
   toks <- unlist(strsplit(x, "[;,[:space:]]+"))
-  unique(toks[nchar(toks) >= 3L])
+  # Keep tokens of length >= 2 so short surnames (Li, Wu, Kim, An) are retained;
+  # single-letter initials are still dropped as noise.
+  unique(toks[nchar(toks) >= 2L])
 }
 
 #' Count of shared author tokens between two author strings.
@@ -118,6 +120,10 @@ finalize_row <- function(ref, rec, ctx, doi_from_pmid = FALSE) {
   matched_on <- hit$matched_on %||% NA_character_
   confidence <- hit$confidence %||% 0
 
+  # Record whether the underlying match was fuzzy BEFORE any relabeling, so the
+  # "fuzzy is never asserted" guard cannot be bypassed by the PMID relabel.
+  was_fuzzy <- identical(match_type, "title_fuzzy")
+
   # If the DOI was recovered from a PMID, report it as a PMID match and cap
   # confidence at the PMID-exact level.
   if (doi_from_pmid && rec$matched) {
@@ -132,10 +138,18 @@ finalize_row <- function(ref, rec, ctx, doi_from_pmid = FALSE) {
   is_retracted <- isTRUE(rec$matched) &&
     status_is_flagged(status, flag_nature) &&
     confidence >= min_confidence() &&
-    !identical(match_type, "title_fuzzy")
+    !was_fuzzy
 
+  # For an offline snapshot, "checked" and "days since" are relative to the
+  # snapshot's fetch date, not today, so a frozen snapshot does not drift.
+  checked_at <- if (isTRUE(ctx$offline)) {
+    d <- attr(ctx$snapshot, "synced_at")
+    if (is.null(d)) Sys.Date() else as.Date(d)
+  } else {
+    Sys.Date()
+  }
   rdate <- hit$retraction_date %||% as.Date(NA)
-  days_since <- if (!is.na(rdate)) as.integer(Sys.Date() - rdate) else NA_integer_
+  days_since <- if (!is.na(rdate)) as.integer(checked_at - rdate) else NA_integer_
 
   list(
     id = ref$id %||% (ref$doi %||% ref$pmid %||% na_if_empty(ref$title)),
@@ -158,6 +172,12 @@ finalize_row <- function(ref, rec, ctx, doi_from_pmid = FALSE) {
     reason = hit$reason %||% NA_character_,
     sources = if (length(rec$confirming)) paste(rec$confirming, collapse = ", ") else NA_character_,
     disagreement = isTRUE(rec$disagreement),
+    disagreeing = if (length(rec$disagreeing)) {
+      paste(rec$disagreeing, collapse = ", ")
+    } else {
+      NA_character_
+    },
+    checked_at = checked_at,
     source_file = ref$source_file %||% NA_character_,
     location = ref$location %||% NA_character_
   )

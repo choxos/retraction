@@ -15,26 +15,37 @@
 #' @export
 normalize_doi <- function(x) {
   x <- trimws(as.character(x))
+  x <- sub("^[<\\[({]+\\s*", "", x, perl = TRUE)  # leading wrappers, e.g. <10.x>
   x <- sub("^doi:\\s*", "", x, ignore.case = TRUE)
   x <- sub("^https?://(dx\\.)?doi\\.org/", "", x, ignore.case = TRUE)
+  x <- sub("^[<\\[({]+\\s*", "", x, perl = TRUE)  # wrappers left after a prefix
   x <- tolower(x)
   x <- sub("[.,;:\"'\\]}>]+$", "", x, perl = TRUE)
+  # Strip an unbalanced trailing bracket left by a wrapper (e.g. "(10.x)"),
+  # while preserving balanced parentheses that are part of the DOI.
+  fix <- !is.na(x) & grepl("[)\\]}]$", x, perl = TRUE)
+  if (any(fix)) x[fix] <- strip_wrapping(x[fix])
   x <- trimws(x)
   ifelse(is.na(x) | x == "" | !startsWith(x, "10."), NA_character_, x)
 }
 
 #' Normalize a PubMed identifier to bare digits.
 #'
+#' Accepts an optional `PMID:` prefix. Input that is not a bare run of digits
+#' after the prefix is rejected as `NA` rather than coerced, so a PMCID or DOI
+#' placed in a PMID field is not silently turned into a fabricated PMID.
+#'
 #' @param x A character (or numeric) vector of PMIDs, optionally `PMID:`-prefixed.
 #' @return A character vector of digit-only PMIDs, `NA` where none is present.
 #' @examples
 #' normalize_pmid("PMID: 12345678")
+#' normalize_pmid("PMC12345")  # NA: a PMCID is not a PMID
 #' @export
 normalize_pmid <- function(x) {
   x <- trimws(as.character(x))
   x <- sub("^pmid:?\\s*", "", x, ignore.case = TRUE)
-  x <- gsub("[^0-9]", "", x)
-  ifelse(is.na(x) | x == "", NA_character_, x)
+  x <- trimws(x)
+  ifelse(is.na(x) | !grepl("^[0-9]{1,9}$", x), NA_character_, x)
 }
 
 #' Normalize a title for fuzzy comparison only.
@@ -49,7 +60,8 @@ normalize_pmid <- function(x) {
 normalize_title <- function(x) {
   x <- as.character(x)
   x <- tolower(x)
-  x <- sub("^\\s*(retracted(\\s+article)?|withdrawn|expression of concern)\\s*[:.-]+\\s*",
+  x <- sub(paste0("^\\s*[\\[(]?\\s*(retracted(\\s+article)?|retraction(\\s+of)?|",
+                  "withdrawn|withdrawal|expression of concern)\\b"),
            "", x, perl = TRUE)
   x <- gsub("<[^>]+>", " ", x)
   x <- gsub("[[:punct:]]", " ", x)
@@ -57,10 +69,10 @@ normalize_title <- function(x) {
   trimws(x)
 }
 
-#' Does `x` look like a DOI?
+#' Does `x` look like a DOI (registrant plus a non-empty suffix)?
 #' @noRd
 looks_like_doi <- function(x) {
-  grepl("10\\.[0-9]{4,9}/", x, perl = TRUE)
+  grepl("10\\.[0-9]{4,9}/[^[:space:]]", x, perl = TRUE)
 }
 
 #' Does `x` look like a bare PMID (all digits, plausible length)?

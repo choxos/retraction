@@ -41,21 +41,37 @@ strip_norm_columns <- function(snap) {
 #' Download year-sliced export pages and bind them.
 #' @return A list with `df` (or NULL) and `truncated` (logical).
 #' @noRd
+#' Row-bind data frames, aligning by the union of their column names.
+#' @noRd
+rbind_union <- function(frames) {
+  frames <- Filter(function(f) !is.null(f) && nrow(f), frames)
+  if (!length(frames)) return(NULL)
+  cols <- Reduce(union, lapply(frames, names))
+  aligned <- lapply(frames, function(f) {
+    for (c in setdiff(cols, names(f))) f[[c]] <- NA_character_
+    f[, cols, drop = FALSE]
+  })
+  do.call(rbind, aligned)
+}
+
+#' @noRd
 download_slices <- function(years, quiet) {
   show_bar <- !quiet && interactive()
   if (show_bar) cli::cli_progress_bar("Downloading", total = length(years))
-  frames <- list(); truncated <- FALSE
+  frames <- list()
   for (y in years) {
     df <- xera_export_slice(year_from = y, year_to = y, limit = 10000L)
-    if (!is.null(df) && nrow(df)) {
-      frames[[length(frames) + 1L]] <- df
-      if (nrow(df) >= 10000L) truncated <- TRUE
+    # A year at the export cap is fetched completely via paginated /papers so no
+    # records are silently truncated.
+    if (!is.null(df) && nrow(df) >= 10000L) {
+      full <- xera_papers_year(y)
+      if (!is.null(full) && nrow(full) >= nrow(df)) df <- full
     }
+    if (!is.null(df) && nrow(df)) frames[[length(frames) + 1L]] <- df
     if (show_bar) cli::cli_progress_update()
   }
   if (show_bar) cli::cli_progress_done()
-  list(df = if (length(frames)) do.call(rbind, frames) else NULL,
-       truncated = truncated)
+  list(df = rbind_union(frames))
 }
 
 #' Download or update a local snapshot of the retraction corpus
@@ -130,10 +146,16 @@ retraction_sync <- function(force = FALSE, incremental = TRUE, quiet = FALSE) {
       snap <- existing_raw; n_new <- 0L; n_upd <- 0L
     } else {
       newdf <- dl$df[!duplicated(dl$df$record_id), , drop = FALSE]
-      common <- intersect(names(newdf), names(existing_raw))
+      changed <- length(setdiff(names(newdf), names(existing_raw))) > 0 ||
+        length(setdiff(names(existing_raw), names(newdf))) > 0
+      if (!quiet && changed) {
+        cli::cli_alert_info("The API schema changed; columns are preserved via a union merge.")
+      }
       merged <- tryCatch(
-        rbind(newdf[, common, drop = FALSE],
-              existing_raw[!existing_raw$record_id %in% newdf$record_id, common, drop = FALSE]),
+        rbind_union(list(
+          newdf,
+          existing_raw[!existing_raw$record_id %in% newdf$record_id, , drop = FALSE]
+        )),
         error = function(e) NULL
       )
       if (is.null(merged)) {
@@ -148,18 +170,15 @@ retraction_sync <- function(force = FALSE, incremental = TRUE, quiet = FALSE) {
 
   snap <- add_norm_columns(snap)
   attr(snap, "synced_at") <- Sys.time()
-  saveRDS(snap, path)
+  # Write atomically so an interrupted write cannot corrupt the snapshot.
+  tmp <- paste0(path, ".tmp")
+  saveRDS(snap, tmp)
+  file.rename(tmp, path)
   .snapshot_cache$data <- snap
   .snapshot_cache$freshness_checked <- TRUE
 
   if (!quiet) {
     cli::cli_alert_success("Snapshot ready: {nrow(snap)} records ({n_new} new, {n_upd} updated).")
-    if (isTRUE(dl$truncated)) {
-      cli::cli_alert_warning(paste0(
-        "Some year slices hit the 10,000-row export cap; run ",
-        "{.code retraction_sync(force = TRUE)} for a complete refresh."
-      ))
-    }
   }
   invisible(snap)
 }
@@ -199,12 +218,12 @@ retraction_clear_cache <- function() {
 
 #' Warn (once per session) if the offline snapshot is behind the live database.
 #'
-#' Best-effort: makes one small request and stays silent if the network is
-#' unavailable, falling back to an age-based hint. Controlled by
-#' `getOption("retraction.check_freshness", TRUE)`.
+#' Opt-in only: offline mode is fully local by default so it does not leak a
+#' network request. Set `options(retraction.check_freshness = TRUE)` to enable a
+#' single small freshness request during offline checks.
 #' @noRd
 snapshot_freshness_check <- function(snap) {
-  if (!isTRUE(getOption("retraction.check_freshness", TRUE))) return(invisible())
+  if (!isTRUE(getOption("retraction.check_freshness", FALSE))) return(invisible())
   if (isTRUE(.snapshot_cache$freshness_checked)) return(invisible())
   .snapshot_cache$freshness_checked <- TRUE
   if (is.null(snap) || !nrow(snap)) return(invisible())

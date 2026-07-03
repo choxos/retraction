@@ -185,15 +185,8 @@ pmc_fetch_xml <- function(pmcid, cache = TRUE, overwrite = FALSE) {
 #' Extract the article's own DOI from a fetched JATS document.
 #' @noRd
 jats_article_doi <- function(doc) {
-  d <- tryCatch(
-    {
-      xml2::xml_ns_strip(doc)
-      doc
-    },
-    error = function(e) NULL
-  )
-  if (is.null(d)) return(NA_character_)
-  normalize_doi(xml_text1(d, ".//article-meta//article-id[@pub-id-type='doi']"))
+  normalize_doi(xml_text1(doc, paste0(".//", el("article-meta"), "//",
+                                      el("article-id"), "[@pub-id-type='doi']")))
 }
 
 ## ---------------------------------------------------------------------------

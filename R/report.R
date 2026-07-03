@@ -115,7 +115,7 @@ render_html <- function(x, title) {
   )
   fl <- retracted(x, "flagged")
   ps <- retracted(x, "possible")
-  nt <- x[x$status %in% c("correction", "reinstated"), , drop = FALSE]
+  nt <- notice_rows(x)
   sections <- ""
   if (nrow(fl)) sections <- paste0(sections, html_section("Flagged citations", fl, "danger"))
   if (nrow(ps)) {
@@ -141,19 +141,23 @@ render_html <- function(x, title) {
   )
 }
 
+# Escape a value for a Markdown table cell: pipes and newlines break the table.
+#' @noRd
+md_cell <- function(x) {
+  x <- blank_na(x)
+  x <- gsub("|", "\\|", x, fixed = TRUE)
+  gsub("[\r\n]+", " ", x)
+}
+
 #' @noRd
 md_section <- function(heading, df) {
   rows <- vapply(seq_len(nrow(df)), function(i) {
     r <- df[i, ]
-    id <- if (!is.na(r$doi)) sprintf("[%s](https://doi.org/%s)", r$doi, r$doi) else blank_na(r$id)
+    id <- if (!is.na(r$doi)) sprintf("[%s](https://doi.org/%s)", r$doi, r$doi) else md_cell(r$id)
     when <- if (!is.na(r$retraction_date)) format(r$retraction_date) else ""
-    ttl <- if (!is.na(r$matched_title)) {
-      gsub("|", "/", r$matched_title, fixed = TRUE)
-    } else {
-      "(no title)"
-    }
-    sprintf("| %s | %s | %s | %s | %s |", id, ttl, blank_na(r$journal),
-            when, blank_na(r$reason))
+    ttl <- if (!is.na(r$matched_title)) md_cell(r$matched_title) else "(no title)"
+    sprintf("| %s | %s | %s | %s | %s |", id, ttl, md_cell(r$journal),
+            when, md_cell(r$reason))
   }, character(1))
   paste0(
     "\n## ", heading, " (", nrow(df), ")\n\n",
@@ -168,7 +172,7 @@ render_md <- function(x, title) {
   cnt <- result_counts(x)
   fl <- retracted(x, "flagged")
   ps <- retracted(x, "possible")
-  nt <- x[x$status %in% c("correction", "reinstated"), , drop = FALSE]
+  nt <- notice_rows(x)
   out <- paste0(
     "# ", title, "\n\n",
     sprintf("Generated %s. %d reference%s checked.\n\n", format(Sys.time()),

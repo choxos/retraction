@@ -10,6 +10,13 @@
 ## ---------------------------------------------------------------------------
 
 #' Construct a uniform backend hit.
+#'
+#' `state` is one of "ok" (the source completed a lookup for this reference),
+#' "failed" (the request errored), or "not_applicable" (the source cannot check
+#' this reference, e.g. a DOI-only source given a title-only reference). When
+#' `state` is not given it is derived from `checked`. Only "failed" counts as an
+#' error during reconciliation; "not_applicable" never turns a result into
+#' "unchecked".
 #' @noRd
 new_hit <- function(source, source_priority, checked = FALSE, matched = FALSE,
                     status = "none", doi = NA_character_, pmid = NA_character_,
@@ -19,12 +26,14 @@ new_hit <- function(source, source_priority, checked = FALSE, matched = FALSE,
                     status_source = NA_character_,
                     retraction_date = as.Date(NA), reason = NA_character_,
                     matched_on = NA_character_, match_type = NA_character_,
-                    confidence = 0, evidence = character(0), raw = NULL) {
+                    confidence = 0, evidence = character(0), raw = NULL,
+                    state = NULL) {
+  if (is.null(state)) state <- if (isTRUE(checked)) "ok" else "not_applicable"
   list(
     source = source, source_priority = source_priority, checked = checked,
-    matched = matched, status = status, doi = doi, pmid = pmid, pmcid = pmcid,
-    record_id = record_id, title = title, journal = journal, nature = nature,
-    notice_type = notice_type, status_source = status_source,
+    state = state, matched = matched, status = status, doi = doi, pmid = pmid,
+    pmcid = pmcid, record_id = record_id, title = title, journal = journal,
+    nature = nature, notice_type = notice_type, status_source = status_source,
     retraction_date = retraction_date, reason = reason, matched_on = matched_on,
     match_type = match_type, confidence = confidence, evidence = evidence,
     raw = raw
@@ -127,17 +136,27 @@ build_xera_hit <- function(it, matched_on, match_type = "doi_exact",
   )
 }
 
-#' Pick the governing record among several sharing a DOI: the most recent by
-#' retraction date (so a later Reinstatement supersedes an earlier Retraction).
+#' Pick the governing record among several sharing a DOI.
+#'
+#' Reinstatement is detected structurally: if any record is a Reinstatement, it
+#' governs (the work is no longer under retraction), even if its date is missing.
+#' Otherwise the most recent notice governs. A missing date is treated as "now"
+#' so a dateless reinstatement still supersedes an older dated retraction.
 #' @noRd
 pick_governing <- function(items) {
   if (length(items) == 1L) return(items[[1L]])
-  dates <- as.Date(vapply(
-    items, function(it) as.character(parse_api_date(pluck1(it, "retraction_date"))),
+  natures <- tolower(vapply(
+    items, function(it) na_if_empty(pluck1(it, "retraction_nature")) %||% "",
     character(1)
   ))
-  ord <- order(dates, decreasing = TRUE, na.last = TRUE)
-  items[[ord[1L]]]
+  reinst <- which(grepl("reinstat", natures))
+  pool <- if (length(reinst)) items[reinst] else items
+  today <- Sys.Date()
+  dates <- as.Date(vapply(pool, function(it) {
+    d <- parse_api_date(pluck1(it, "retraction_date"))
+    as.character(if (is.na(d)) today else d)
+  }, character(1)))
+  pool[[order(dates, decreasing = TRUE)[1L]]]
 }
 
 #' Turn Xera search items into a hit, matching a normalized DOI against both the
@@ -217,7 +236,7 @@ backend_xera <- function(ref, ctx) {
   # not the same as a checked no-match.
   if (is_nonempty_string(ref$doi)) {
     items <- xera_search_doi(ref$doi)
-    if (is.null(items)) return(new_hit("xera", 1L, checked = FALSE))
+    if (is.null(items)) return(new_hit("xera", 1L, state = "failed"))
     hit <- xera_items_to_hit(items, ref$doi)
     if (is.null(hit) && length(items)) hit <- xera_notice_hit(items, ref$doi)
     if (!is.null(hit)) return(xera_enrich_hit(hit))
@@ -227,7 +246,7 @@ backend_xera <- function(ref, ctx) {
   # Online fuzzy title (best-effort; the API only does substring search).
   if (isTRUE(ctx$allow_fuzzy) && is_nonempty_string(ref$title)) {
     res <- xera_get("search/advanced", list(q = ref$title, per_page = 50L))
-    if (is.null(res)) return(new_hit("xera", 1L, checked = FALSE))
+    if (is.null(res)) return(new_hit("xera", 1L, state = "failed"))
     items <- pluck1(res, "items") %||% list()
     hit <- fuzzy_hit_from_items(items, ref)
     if (!is.null(hit)) return(hit)
@@ -272,7 +291,7 @@ crossref_verdict <- function(msg, doi) {
 backend_crossref <- function(ref, ctx) {
   if (isTRUE(ctx$offline) || !is_nonempty_string(ref$doi)) return(new_hit("crossref", 2L))
   msg <- crossref_work(ref$doi)
-  if (is.null(msg)) return(new_hit("crossref", 2L))
+  if (is.null(msg)) return(new_hit("crossref", 2L, state = "failed"))
   crossref_verdict(msg, ref$doi)
 }
 
@@ -287,6 +306,23 @@ openalex_verdict <- function(work, doi) {
   if (!isTRUE(pluck1(work, "is_retracted"))) {
     return(new_hit("openalex", 3L, checked = TRUE, title = title))
   }
+  # OpenAlex marks both the retracted work and its retraction notice with
+  # is_retracted. The notice is identified by its work type ("retraction") or a
+  # notice-style title, and is treated as a cited notice, not a retracted work,
+  # so an OpenAlex-only check does not false-flag a notice citation.
+  type <- tolower(na_if_empty(pluck1(work, "type")))
+  is_notice <- (!is.na(type) && type %in% c("retraction", "erratum")) ||
+    (!is.na(title) && grepl("^\\s*(retraction|withdrawal|expression of concern)\\b",
+                            title, ignore.case = TRUE))
+  if (is_notice) {
+    return(new_hit(
+      "openalex", 3L, checked = TRUE, matched = TRUE, status = "none",
+      doi = doi, title = title, notice_type = "Retraction",
+      status_source = "openalex", matched_on = "retraction_doi",
+      match_type = "doi_exact", confidence = score_match("doi_exact"),
+      evidence = "is_retracted_notice", raw = work
+    ))
+  }
   new_hit(
     "openalex", 3L, checked = TRUE, matched = TRUE, status = "retracted",
     doi = doi, title = title, nature = "Retraction",
@@ -300,7 +336,7 @@ openalex_verdict <- function(work, doi) {
 backend_openalex <- function(ref, ctx) {
   if (isTRUE(ctx$offline) || !is_nonempty_string(ref$doi)) return(new_hit("openalex", 3L))
   work <- openalex_by_doi(ref$doi)
-  if (is.null(work)) return(new_hit("openalex", 3L))
+  if (is.null(work)) return(new_hit("openalex", 3L, state = "failed"))
   openalex_verdict(work, ref$doi)
 }
 
@@ -325,36 +361,41 @@ reconcile_sources <- function(hits) {
   hits <- compact(hits)
   by_priority <- function(hs) hs[order(vapply(hs, function(h) h$source_priority, numeric(1)))]
   srcs <- function(hs) unique(vapply(hs, function(h) h$source, character(1)))
+  state_of <- function(h) h$state %||% (if (isTRUE(h$checked)) "ok" else "not_applicable")
 
-  checked <- Filter(function(h) isTRUE(h$checked), hits)
-  checked_sources <- srcs(checked)
-  errored <- length(checked) < length(hits)
+  ok <- Filter(function(h) identical(state_of(h), "ok"), hits)
+  failed <- Filter(function(h) identical(state_of(h), "failed"), hits)
+  ok_sources <- srcs(ok)
+  errored <- length(failed) > 0
 
   matched <- Filter(function(h) isTRUE(h$matched), hits)
   is_notice <- function(h) identical(h$matched_on, "retraction_doi")
   cleared <- Filter(function(h) is_notice(h) || identical(h$status, "reinstated"), matched)
   flagged <- Filter(function(h) status_is_flagged(h$status) && !is_notice(h), matched)
 
-  base <- list(checked = checked_sources, errored = errored)
+  base <- list(checked = ok_sources, errored = errored)
 
   if (length(cleared)) {
     best <- by_priority(cleared)[[1L]]
+    dis <- srcs(flagged)
     return(c(list(matched = TRUE, status = best$status, confirming = srcs(matched),
-                  disagreement = length(flagged) > 0, hit = best), base))
+                  disagreement = length(dis) > 0, disagreeing = dis, hit = best), base))
   }
   if (length(flagged)) {
     best <- by_priority(flagged)[[1L]]
-    disagreement <- length(setdiff(checked_sources, srcs(flagged))) > 0
+    dis <- setdiff(ok_sources, srcs(flagged))
     return(c(list(matched = TRUE, status = best$status, confirming = srcs(flagged),
-                  disagreement = disagreement, hit = best), base))
+                  disagreement = length(dis) > 0, disagreeing = dis, hit = best), base))
   }
   if (length(matched)) {
     best <- by_priority(matched)[[1L]]
     return(c(list(matched = TRUE, status = best$status, confirming = srcs(matched),
-                  disagreement = FALSE, hit = best), base))
+                  disagreement = FALSE, disagreeing = character(0), hit = best), base))
   }
+  # No match. Unchecked only when a source failed or nothing could check it;
+  # a not-applicable source (e.g. a DOI-only source given a title) is ignored.
   list(matched = FALSE,
-       status = if (errored || !length(checked_sources)) "unchecked" else "none",
-       confirming = character(0), checked = checked_sources,
-       disagreement = FALSE, hit = NULL, errored = errored)
+       status = if (errored || !length(ok_sources)) "unchecked" else "none",
+       confirming = character(0), checked = ok_sources,
+       disagreement = FALSE, disagreeing = character(0), hit = NULL, errored = errored)
 }
