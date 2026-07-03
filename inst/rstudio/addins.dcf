@@ -1,0 +1,4 @@
+Name: Check retractions in active file
+Description: Scan the active editor document for citations to retracted work and jump to the first one.
+Binding: retraction_addin_check_active
+Interactive: true

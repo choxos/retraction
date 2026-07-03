@@ -128,10 +128,11 @@ render_report(result, "report.md", format = "md")
 
 ## How matching works
 
-Within a source, matching runs a cascade: exact DOI, then PMID (resolved to a
-DOI via OpenAlex, since the Retraction Watch API cannot be queried by PMID), then
-fuzzy title matching for references that carry no identifier. When several
-sources are selected they are all queried and their verdicts reconciled. Exact
+Within a source, matching runs a cascade: exact DOI, then PMID (matched directly
+against the Retraction Watch corpus, both online and offline, falling back to
+OpenAlex only to obtain a DOI for the other sources), then fuzzy title matching
+for references that carry no identifier. When several sources are selected they
+are all queried and their verdicts reconciled. Exact
 identifier matches are asserted with high confidence; fuzzy matches are reported
 as "possible" so you can verify them, and are never asserted as retracted. Fuzzy
 and PMID matching are most reliable in offline mode, where the full corpus is

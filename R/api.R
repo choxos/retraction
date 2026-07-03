@@ -18,6 +18,34 @@ xera_search_doi <- function(doi, per_page = 100L) {
   pluck1(res, "items") %||% list()
 }
 
+#' Search the corpus by exact PubMed ID. NULL on request failure, else items.
+#' @noRd
+xera_search_pmid <- function(pmid, per_page = 20L) {
+  res <- xera_get("search/advanced", list(pubmed_id = pmid, per_page = per_page))
+  if (is.null(res)) return(NULL)
+  pluck1(res, "items") %||% list()
+}
+
+#' Resolve a PMID to the retracted work's DOI via the Xera corpus.
+#'
+#' Authoritative (the corpus is Retraction Watch), with no OpenAlex dependency.
+#' Returns the original paper's DOI only when the PMID matches a retracted work's
+#' own PubMed ID; NULL when unmatched, when only a retraction-notice PMID matched
+#' (citing the notice is not citing the work), or on failure.
+#' @noRd
+xera_pmid_to_doi <- function(pmid) {
+  items <- xera_search_pmid(pmid)
+  if (is.null(items) || !length(items)) return(NULL)
+  pmid <- as.character(pmid)
+  for (it in items) {
+    if (identical(na_if_empty(pluck1(it, "original_paper_pubmed_id")), pmid)) {
+      d <- normalize_doi(pluck1(it, "original_paper_doi") %||% NA_character_)
+      if (!is.na(d)) return(d)
+    }
+  }
+  NULL
+}
+
 #' Fetch a full Xera record by Retraction Watch record id.
 #' @noRd
 xera_paper <- function(record_id) {
@@ -60,7 +88,8 @@ xera_export_slice <- function(year_from = NULL, year_to = NULL, limit = 10000L) 
 
 # Columns the snapshot needs, matching the export CSV.
 SNAPSHOT_COLS <- c(
-  "record_id", "title", "original_paper_doi", "retraction_doi", "journal",
+  "record_id", "title", "original_paper_doi", "retraction_doi",
+  "original_paper_pubmed_id", "retraction_pubmed_id", "journal",
   "publisher", "author", "original_paper_date", "retraction_date",
   "retraction_nature", "reason", "subject", "country", "citation_count",
   "is_open_access"
@@ -138,8 +167,9 @@ openalex_by_pmid <- function(pmid) {
 
 #' Resolve a PMID to a normalized DOI via OpenAlex, or `NA`.
 #'
-#' The Xera API cannot be queried by PMID, so PMID-only references are resolved
-#' to a DOI here and then matched through the normal DOI path.
+#' A fallback used only when the Xera corpus has no record for a PMID (see
+#' `xera_pmid_to_doi()`), to obtain a DOI so the other DOI-only sources can be
+#' queried.
 #' @noRd
 resolve_pmid_to_doi <- function(pmid) {
   work <- openalex_by_pmid(pmid)
