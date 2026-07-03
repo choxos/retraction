@@ -7,7 +7,7 @@
 [![R-CMD-check](https://github.com/choxos/retraction/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/choxos/retraction/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/choxos/retraction/graph/badge.svg)](https://app.codecov.io/gh/choxos/retraction)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 <!-- badges: end -->
 
 `retraction` scans your manuscripts, bibliographies, and reference lists for
@@ -163,4 +163,4 @@ by the author, who is solely responsible for the package and its correctness.
 
 ## License
 
-GPL-3. See [`LICENSE`](LICENSE).
+GPL-3. See the `LICENSE` file.
