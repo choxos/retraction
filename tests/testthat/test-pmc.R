@@ -9,7 +9,8 @@ test_that("pmc_articles on an empty result is an empty tibble", {
   a <- pmc_articles(new_retraction_result(list()))
   expect_s3_class(a, "tbl_df")
   expect_equal(nrow(a), 0)
-  expect_true(all(c("input", "pmcid", "is_open_access", "n_retracted") %in% names(a)))
+  expect_true(all(c("input", "pmcid", "doi", "resolved", "retrieved",
+                    "is_open_access", "n_references", "n_retracted") %in% names(a)))
 })
 
 test_that("check_pmc with no input warns and returns an empty result", {

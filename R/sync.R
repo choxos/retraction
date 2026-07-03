@@ -113,7 +113,11 @@ retraction_sync <- function(force = FALSE, incremental = TRUE, quiet = FALSE) {
                                       na.rm = TRUE))
     if (!is.finite(last_year)) {
       synced <- attr(existing, "synced_at")
-      last_year <- if (!is.null(synced)) as.integer(format(as.Date(synced), "%Y")) else this_year - 1L
+      last_year <- if (!is.null(synced)) {
+        as.integer(format(as.Date(synced), "%Y"))
+      } else {
+        this_year - 1L
+      }
     }
     lo <- max(ymin, last_year - 1L)
     hi <- max(lo, min(ymax, this_year))
@@ -151,9 +155,10 @@ retraction_sync <- function(force = FALSE, incremental = TRUE, quiet = FALSE) {
   if (!quiet) {
     cli::cli_alert_success("Snapshot ready: {nrow(snap)} records ({n_new} new, {n_upd} updated).")
     if (isTRUE(dl$truncated)) {
-      cli::cli_alert_warning(
-        "Some year slices hit the 10,000-row export cap; run {.code retraction_sync(force = TRUE)} for a complete refresh."
-      )
+      cli::cli_alert_warning(paste0(
+        "Some year slices hit the 10,000-row export cap; run ",
+        "{.code retraction_sync(force = TRUE)} for a complete refresh."
+      ))
     }
   }
   invisible(snap)
@@ -171,7 +176,10 @@ load_snapshot <- function(reload = FALSE) {
   snap
 }
 
-#' Delete the local snapshot and clear the in-memory cache
+#' Clear the package cache
+#'
+#' Removes the local retraction snapshot and any cached PubMed Central XML, and
+#' resets the in-memory cache.
 #'
 #' @return Invisibly `TRUE`.
 #' @export
@@ -182,6 +190,8 @@ load_snapshot <- function(reload = FALSE) {
 retraction_clear_cache <- function() {
   path <- snapshot_path()
   if (file.exists(path)) unlink(path)
+  pmc_dir <- file.path(retraction_cache_dir(), "pmc")
+  if (dir.exists(pmc_dir)) unlink(pmc_dir, recursive = TRUE)
   .snapshot_cache$data <- NULL
   .snapshot_cache$freshness_checked <- NULL
   invisible(TRUE)
@@ -211,16 +221,21 @@ snapshot_freshness_check <- function(snap) {
   if (is.null(res)) {
     age <- if (!is.null(synced)) as.numeric(difftime(Sys.time(), synced, units = "days")) else NA
     if (!is.na(age) && age > 30) {
-      cli::cli_alert_info(
-        "Your offline retraction snapshot is {round(age)} days old; run {.code retraction_sync()} when online to update."
-      )
+      cli::cli_alert_info(paste0(
+        "Your offline retraction snapshot is {round(age)} days old; run ",
+        "{.code retraction_sync()} when online to update."
+      ))
     }
     return(invisible())
   }
 
   server_total <- suppressWarnings(as.numeric(pluck1(res, "total")))
   items <- pluck1(res, "items")
-  server_newest <- if (length(items)) parse_api_date(pluck1(items[[1L]], "retraction_date")) else as.Date(NA)
+  server_newest <- if (length(items)) {
+    parse_api_date(pluck1(items[[1L]], "retraction_date"))
+  } else {
+    as.Date(NA)
+  }
 
   outdated <- (!is.na(server_newest) && !is.na(local_newest) && server_newest > local_newest) ||
     (is.finite(server_total) && server_total > nrow(snap))
@@ -229,7 +244,8 @@ snapshot_freshness_check <- function(snap) {
     synced_txt <- if (!is.null(synced)) sprintf(", synced %s", format(as.Date(synced))) else ""
     cli::cli_alert_warning(c(
       "Your offline retraction snapshot is behind the live database.",
-      "i" = "Snapshot: {nrow(snap)} records{synced_txt}. Run {.code retraction_sync()} to add the latest retractions."
+      "i" = paste0("Snapshot: {nrow(snap)} records{synced_txt}. Run ",
+                   "{.code retraction_sync()} to add the latest retractions.")
     ))
   }
   invisible()

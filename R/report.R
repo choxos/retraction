@@ -7,7 +7,32 @@ html_escape <- function(x) {
   x <- gsub("&", "&amp;", x, fixed = TRUE)
   x <- gsub("<", "&lt;", x, fixed = TRUE)
   x <- gsub(">", "&gt;", x, fixed = TRUE)
-  gsub("\"", "&quot;", x, fixed = TRUE)
+  x <- gsub("\"", "&quot;", x, fixed = TRUE)
+  gsub("'", "&#39;", x, fixed = TRUE)
+}
+
+#' Distinct sources that confirmed a match, for the report footer.
+#' @noRd
+sources_used <- function(x) {
+  s <- x$sources[!is.na(x$sources)]
+  used <- unique(unlist(strsplit(s, ", ", fixed = TRUE)))
+  if (length(used)) paste(used, collapse = ", ") else "the configured sources"
+}
+
+#' The reassurance line shown when nothing is flagged, honoring empty and
+#' unchecked results.
+#' @noRd
+clean_message <- function(cnt) {
+  if (cnt$n == 0L) return("No references were found in the input.")
+  checked <- cnt$n - cnt$unchecked
+  if (cnt$unchecked > 0L) {
+    return(sprintf(
+      paste0("No retracted references among the %d reference%s that were ",
+             "checked; %d could not be checked."),
+      checked, if (checked == 1L) "" else "s", cnt$unchecked))
+  }
+  sprintf("No retracted references were detected among %d reference%s.",
+          cnt$n, if (cnt$n == 1L) "" else "s")
 }
 
 #' @noRd
@@ -15,7 +40,9 @@ ref_cell <- function(r) {
   loc <- if (!is.na(r$source_file)) {
     sprintf("<div class='loc'>%s%s</div>", html_escape(basename(r$source_file)),
             if (!is.na(r$location)) paste0(":", html_escape(r$location)) else "")
-  } else ""
+  } else {
+    ""
+  }
   if (!is.na(r$doi)) {
     sprintf("<a href='https://doi.org/%s'>%s</a>%s",
             html_escape(r$doi), html_escape(r$doi), loc)
@@ -58,8 +85,10 @@ REPORT_CSS <- paste(
   ".card{border-radius:.5rem;padding:.75rem 1rem;min-width:5rem;background:#fff;",
   "border:1px solid #e4e4ef}.card .v{font-size:1.6rem;font-weight:700}",
   ".card .l{font-size:.8rem;color:#666}.card.danger{background:#fdecef;border-color:#f5b5c0}",
-  ".card.warn{background:#fff6e6;border-color:#f2d79a}.card.ok{background:#e9f7ef;border-color:#a9dcc0}",
-  "section{background:#fff;border:1px solid #e4e4ef;border-radius:.5rem;padding:1rem 1.25rem;margin-bottom:1.25rem}",
+  ".card.warn{background:#fff6e6;border-color:#f2d79a}",
+  ".card.ok{background:#e9f7ef;border-color:#a9dcc0}",
+  "section{background:#fff;border:1px solid #e4e4ef;border-radius:.5rem;",
+  "padding:1rem 1.25rem;margin-bottom:1.25rem}",
   "h2{margin:.2rem 0 .75rem;font-size:1.1rem}.count{background:#eee;border-radius:1rem;",
   "padding:0 .5rem;font-size:.85rem;color:#444}.scroll{overflow-x:auto}",
   "table{border-collapse:collapse;width:100%;font-size:.9rem}",
@@ -71,7 +100,10 @@ REPORT_CSS <- paste(
 #' @noRd
 render_html <- function(x, title) {
   cnt <- result_counts(x)
-  card <- function(v, l, cls = "") sprintf("<div class='card %s'><div class='v'>%d</div><div class='l'>%s</div></div>", cls, v, l)
+  card <- function(v, l, cls = "") {
+    sprintf(paste0("<div class='card %s'><div class='v'>%d</div>",
+                   "<div class='l'>%s</div></div>"), cls, v, l)
+  }
   cards <- paste0(
     "<div class='cards'>",
     card(cnt$flagged, "flagged", "danger"),
@@ -86,10 +118,14 @@ render_html <- function(x, title) {
   nt <- x[x$status %in% c("correction", "reinstated"), , drop = FALSE]
   sections <- ""
   if (nrow(fl)) sections <- paste0(sections, html_section("Flagged citations", fl, "danger"))
-  if (nrow(ps)) sections <- paste0(sections, html_section("Possible matches (verify manually)", ps, "warn"))
+  if (nrow(ps)) {
+    sections <- paste0(sections,
+                       html_section("Possible matches (verify manually)", ps, "warn"))
+  }
   if (nrow(nt)) sections <- paste0(sections, html_section("Other notices", nt))
   if (!nrow(fl) && !nrow(ps)) {
-    sections <- paste0(sections, "<p class='ok-msg'>No retracted references were detected.</p>")
+    sections <- paste0(sections, "<p class='ok-msg'>",
+                       html_escape(clean_message(cnt)), "</p>")
   }
   paste0(
     "<!doctype html><html lang='en'><head><meta charset='utf-8'>",
@@ -99,8 +135,8 @@ render_html <- function(x, title) {
     sprintf("<p class='meta'>Generated %s. %d reference%s checked.</p>",
             html_escape(format(Sys.time())), cnt$n, if (cnt$n == 1L) "" else "s"),
     cards, sections,
-    "<footer>Created with the retraction R package. ",
-    "Sources: Retraction Watch via XeraRetractionTracker, Crossref, OpenAlex.</footer>",
+    "<footer>Created with the retraction R package. Sources: ",
+    html_escape(sources_used(x)), ".</footer>",
     "</body></html>"
   )
 }
@@ -111,7 +147,11 @@ md_section <- function(heading, df) {
     r <- df[i, ]
     id <- if (!is.na(r$doi)) sprintf("[%s](https://doi.org/%s)", r$doi, r$doi) else blank_na(r$id)
     when <- if (!is.na(r$retraction_date)) format(r$retraction_date) else ""
-    ttl <- if (!is.na(r$matched_title)) gsub("|", "/", r$matched_title, fixed = TRUE) else "(no title)"
+    ttl <- if (!is.na(r$matched_title)) {
+      gsub("|", "/", r$matched_title, fixed = TRUE)
+    } else {
+      "(no title)"
+    }
     sprintf("| %s | %s | %s | %s | %s |", id, ttl, blank_na(r$journal),
             when, blank_na(r$reason))
   }, character(1))
@@ -133,13 +173,14 @@ render_md <- function(x, title) {
     "# ", title, "\n\n",
     sprintf("Generated %s. %d reference%s checked.\n\n", format(Sys.time()),
             cnt$n, if (cnt$n == 1L) "" else "s"),
-    sprintf("- **Flagged:** %d\n- **Possible:** %d\n- **Other notice:** %d\n- **Clean:** %d\n- **Unchecked:** %d\n",
+    sprintf(paste0("- **Flagged:** %d\n- **Possible:** %d\n- **Other notice:** %d\n",
+                   "- **Clean:** %d\n- **Unchecked:** %d\n"),
             cnt$flagged, cnt$possible, cnt$notice, cnt$clean, cnt$unchecked)
   )
   if (nrow(fl)) out <- paste0(out, md_section("Flagged citations", fl))
   if (nrow(ps)) out <- paste0(out, md_section("Possible matches (verify manually)", ps))
   if (nrow(nt)) out <- paste0(out, md_section("Other notices", nt))
-  if (!nrow(fl) && !nrow(ps)) out <- paste0(out, "\nNo retracted references were detected.\n")
+  if (!nrow(fl) && !nrow(ps)) out <- paste0(out, "\n", clean_message(cnt), "\n")
   out
 }
 

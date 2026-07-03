@@ -11,6 +11,9 @@
 
 \item{...}{Unused.}
 }
+\value{
+A tibble with one row per status category and its count.
+}
 \description{
 Summarize a retraction result as a status tally.
 }

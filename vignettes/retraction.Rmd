@@ -24,10 +24,12 @@ library(retraction)
 
 ## Checking a file
 
-`check_file()` reads a document or bibliography and checks every reference. It
-supports BibTeX and BibLaTeX (`.bib`), CSL-JSON (`.json`), RIS (`.ris`), EndNote
-XML and JATS XML (`.xml`), Word (`.docx`), PDF (`.pdf`), and any text document
-(`.Rmd`, `.qmd`, `.tex`, `.md`, `.txt`, `.html`), from which DOIs are scraped.
+`check_file()` reads a document or bibliography and checks every reference.
+Structured formats have their identifiers read from fields: BibTeX and BibLaTeX
+(`.bib`), CSL-JSON (`.json`), RIS (`.ris`), EndNote XML, and JATS XML. For Word
+(`.docx`), PDF (`.pdf`, which needs the optional `pdftools` package), and text
+documents (`.Rmd`, `.qmd`, `.tex`, `.md`, `.txt`, `.html`), DOIs are scraped from
+the text, so references without a DOI in the text are not detected.
 
 ```{r check-file, eval = FALSE}
 bib <- system.file("extdata", "example.bib", package = "retraction")

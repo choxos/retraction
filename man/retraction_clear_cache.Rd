@@ -2,7 +2,7 @@
 % Please edit documentation in R/sync.R
 \name{retraction_clear_cache}
 \alias{retraction_clear_cache}
-\title{Delete the local snapshot and clear the in-memory cache}
+\title{Clear the package cache}
 \usage{
 retraction_clear_cache()
 }
@@ -10,7 +10,8 @@ retraction_clear_cache()
 Invisibly \code{TRUE}.
 }
 \description{
-Delete the local snapshot and clear the in-memory cache
+Removes the local retraction snapshot and any cached PubMed Central XML, and
+resets the in-memory cache.
 }
 \examples{
 \dontrun{

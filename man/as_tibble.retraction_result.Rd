@@ -11,6 +11,9 @@
 
 \item{...}{Unused.}
 }
+\value{
+A plain \link[tibble:tibble]{tibble::tibble}.
+}
 \description{
 Coerce a retraction result to a plain tibble.
 }

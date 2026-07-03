@@ -35,21 +35,32 @@ rows_to_tibble <- function(rows) {
     return(tbl)
   }
 
-  chr <- function(nm) vapply(rows, function(r) {
-    v <- r[[nm]]; if (is.null(v) || length(v) == 0L) NA_character_ else as.character(v)[1]
-  }, character(1))
+  chr <- function(nm) {
+    vapply(rows, function(r) {
+      v <- r[[nm]]
+      if (is.null(v) || length(v) == 0L) NA_character_ else as.character(v)[1]
+    }, character(1))
+  }
   lgl <- function(nm) vapply(rows, function(r) isTRUE(r[[nm]]), logical(1))
-  num <- function(nm) vapply(rows, function(r) {
-    v <- r[[nm]]; if (is.null(v) || length(v) == 0L) NA_real_ else as.numeric(v)[1]
-  }, numeric(1))
-  intg <- function(nm) vapply(rows, function(r) {
-    v <- r[[nm]]; if (is.null(v) || length(v) == 0L) NA_integer_ else as.integer(v)[1]
-  }, integer(1))
-  datec <- function(nm) as.Date(vapply(rows, function(r) {
-    v <- r[[nm]]
-    if (is.null(v) || length(v) == 0L || is.na(v)) NA_character_
-    else as.character(as.Date(v))
-  }, character(1)))
+  num <- function(nm) {
+    vapply(rows, function(r) {
+      v <- r[[nm]]
+      if (is.null(v) || length(v) == 0L) NA_real_ else as.numeric(v)[1]
+    }, numeric(1))
+  }
+  intg <- function(nm) {
+    vapply(rows, function(r) {
+      v <- r[[nm]]
+      if (is.null(v) || length(v) == 0L) NA_integer_ else as.integer(v)[1]
+    }, integer(1))
+  }
+  datec <- function(nm) {
+    as.Date(vapply(rows, function(r) {
+      v <- r[[nm]]
+      if (is.null(v) || length(v) == 0L || is.na(v)) NA_character_
+      else as.character(as.Date(v))
+    }, character(1)))
+  }
 
   tibble::tibble(
     id = chr("id"), input_type = chr("input_type"), query = chr("query"),
@@ -74,7 +85,9 @@ rows_to_tibble <- function(rows) {
 #' @return A `retraction_result` with the selected rows.
 #' @export
 retracted <- function(x, which = c("flagged", "possible", "all_matched")) {
-  stopifnot(inherits(x, "retraction_result"))
+  if (!inherits(x, "retraction_result")) {
+    cli::cli_abort("{.arg x} must be a {.cls retraction_result}.")
+  }
   which <- match.arg(which)
   keep <- switch(
     which,
@@ -105,6 +118,7 @@ result_counts <- function(x) {
 #' Print a retraction result.
 #' @param x A `retraction_result`.
 #' @param ... Unused.
+#' @return The input `x`, invisibly.
 #' @export
 print.retraction_result <- function(x, ...) {
   cnt <- result_counts(x)
@@ -123,10 +137,14 @@ print.retraction_result <- function(x, ...) {
       loc <- if (!is.na(r$source_file)) {
         sprintf(" [%s%s]", basename(r$source_file),
                 if (!is.na(r$location)) paste0(":", r$location) else "")
-      } else ""
+      } else {
+        ""
+      }
       when <- if (!is.na(r$retraction_date)) {
         sprintf("retracted %s", format(r$retraction_date))
-      } else "retraction date unknown"
+      } else {
+        "retraction date unknown"
+      }
       ttl <- if (is.na(r$matched_title)) "(no title)" else r$matched_title
       cli::cli_li("{.strong {r$id}}{loc}: {ttl} ({when}; source: {r$sources})")
     }
@@ -150,6 +168,7 @@ print.retraction_result <- function(x, ...) {
 #' Summarize a retraction result as a status tally.
 #' @param object A `retraction_result`.
 #' @param ... Unused.
+#' @return A tibble with one row per status category and its count.
 #' @export
 summary.retraction_result <- function(object, ...) {
   cnt <- result_counts(object)
@@ -164,6 +183,7 @@ summary.retraction_result <- function(object, ...) {
 #' Coerce a retraction result to a plain tibble.
 #' @param x A `retraction_result`.
 #' @param ... Unused.
+#' @return A plain [tibble::tibble].
 #' @exportS3Method tibble::as_tibble
 as_tibble.retraction_result <- function(x, ...) {
   class(x) <- setdiff(class(x), "retraction_result")
@@ -174,6 +194,7 @@ as_tibble.retraction_result <- function(x, ...) {
 #' @param x A `retraction_result`.
 #' @param row.names,optional Passed to [base::as.data.frame()].
 #' @param ... Passed to [base::as.data.frame()].
+#' @return A base [data.frame][base::data.frame].
 #' @export
 as.data.frame.retraction_result <- function(x, row.names = NULL, optional = FALSE, ...) {
   class(x) <- setdiff(class(x), "retraction_result")

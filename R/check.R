@@ -137,6 +137,15 @@ check_refs <- function(data, doi_col = NULL, pmid_col = NULL, title_col = NULL,
                        allow_fuzzy = TRUE, resolve_ids = TRUE, progress = TRUE) {
   if (!is.data.frame(data)) cli::cli_abort("{.arg data} must be a data frame.")
   nm <- names(data)
+  for (arg in c("doi_col", "pmid_col", "title_col", "author_col", "year_col")) {
+    v <- get(arg)
+    if (!is.null(v) && !(v %in% nm)) {
+      cli::cli_abort(c(
+        "Column {.val {v}} (passed as {.arg {arg}}) is not in {.arg data}.",
+        "i" = "Available columns: {.val {nm}}."
+      ))
+    }
+  }
   doi_col <- doi_col %||% detect_col(nm, c("doi"))
   pmid_col <- pmid_col %||% detect_col(nm, c("pmid", "pubmed_id", "pubmed"))
   title_col <- title_col %||% detect_col(nm, c("title"))
