@@ -20,6 +20,8 @@
 ^\.zenodo\.json$
 ^ro-crate-metadata\.json$
 ^\.DS_Store$
+^\.codegraph$
+^\.omo$
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
 ^\.lintr$

@@ -11,3 +11,5 @@ inst/doc/
 /Meta/
 CRAN-SUBMISSION
 documentation/
+.codegraph/
+.omo/

@@ -4,7 +4,10 @@
 # preserved) and heuristic (DOIs scraped from text).
 
 # A permissive DOI pattern; trailing prose punctuation is trimmed afterwards.
-DOI_PATTERN <- "10\\.[0-9]{4,9}/[^[:space:]\"'<>]+"
+# Brackets and braces are excluded so a DOI written inside a Markdown link or a
+# LaTeX macro (e.g. `[10.x/y](https://doi.org/10.x/y)`) is not over-captured.
+# Parentheses stay allowed because DOIs legitimately contain them.
+DOI_PATTERN <- "10\\.[0-9]{4,9}/[^[:space:]\"'<>\\]\\[{}]+"
 
 #' Strip prose wrapping from a scraped DOI token.
 #'
@@ -163,8 +166,14 @@ extract_braced <- function(rest) {
   chars <- strsplit(rest, "", fixed = TRUE)[[1]]
   depth <- 0L; out <- character(0)
   for (ch in chars) {
-    if (ch == "{") { depth <- depth + 1L; if (depth == 1L) next }
-    if (ch == "}") { depth <- depth - 1L; if (depth == 0L) break }
+    if (ch == "{") {
+      depth <- depth + 1L
+      if (depth == 1L) next
+    }
+    if (ch == "}") {
+      depth <- depth - 1L
+      if (depth == 0L) break
+    }
     out <- c(out, ch)
   }
   paste(out, collapse = "")
@@ -186,12 +195,18 @@ parse_bib <- function(path) {
       "^@[[:alpha:]]+[[:space:]]*\\{[[:space:]]*([^,[:space:]]+)", entry,
       perl = TRUE))[[1]]
     key <- if (length(km) >= 2L) km[2L] else NA_character_
+    # BibLaTeX uses `date = {YYYY-MM-DD}` where BibTeX uses `year`.
+    yr <- bib_field(entry, "year")
+    if (is.na(yr)) {
+      dt <- bib_field(entry, "date")
+      if (!is.na(dt)) yr <- substr(dt, 1, 4)
+    }
     refs[[i]] <- as_reference(
       doi = bib_field(entry, "doi"),
       pmid = bib_field(entry, "pmid"),
       title = bib_field(entry, "title"),
       author = bib_field(entry, "author"),
-      year = bib_field(entry, "year"),
+      year = yr,
       id = na_if_empty(trimws(key)), source_file = path
     )
   }
@@ -217,7 +232,9 @@ parse_csljson <- function(path) {
     author <- if (!is.null(auths)) {
       paste(vapply(auths, function(a) as_chr(a$family)[1] %||% "", character(1)),
             collapse = "; ")
-    } else NA
+    } else {
+      NA
+    }
     yr <- tryCatch(e[["issued"]][["date-parts"]][[1]][[1]],
                    error = function(err) NA)
     as_reference(doi = pluck1(e, "DOI"), pmid = pluck1(e, "PMID"),
@@ -318,9 +335,22 @@ parse_jats_doc <- function(doc, source_file) {
   if (!length(refs)) refs <- xml2::xml_find_all(doc, ".//ref")
   if (!length(refs)) return(list())
   lapply(refs, function(rf) {
+    doi <- xml_text1(rf, ".//pub-id[@pub-id-type='doi']")
+    pmid <- xml_text1(rf, ".//pub-id[@pub-id-type='pmid']")
+    # Mixed-citation references often carry the DOI/PMID only as inline text.
+    if (is.na(doi) || is.na(pmid)) {
+      txt <- xml2::xml_text(rf)
+      if (is.na(doi)) {
+        d <- extract_dois(txt)
+        if (length(d)) doi <- strip_wrapping(d[[1L]]$doi)
+      }
+      if (is.na(pmid)) {
+        m <- regmatches(txt, regexpr("(?i)pmid[:[:space:]]*[0-9]{5,9}", txt, perl = TRUE))
+        if (length(m) && nzchar(m)) pmid <- gsub("[^0-9]", "", m)
+      }
+    }
     as_reference(
-      doi = xml_text1(rf, ".//pub-id[@pub-id-type='doi']"),
-      pmid = xml_text1(rf, ".//pub-id[@pub-id-type='pmid']"),
+      doi = doi, pmid = pmid,
       title = xml_text1(rf, ".//article-title"),
       year = xml_text1(rf, ".//year"),
       source_file = source_file
@@ -336,8 +366,13 @@ parse_jats_doc <- function(doc, source_file) {
 parse_docx <- function(path) {
   tmp <- tempfile("retraction_docx")
   on.exit(unlink(tmp, recursive = TRUE, force = TRUE), add = TRUE)
-  ok <- tryCatch({ utils::unzip(path, exdir = tmp); TRUE },
-                 error = function(e) FALSE, warning = function(w) FALSE)
+  ok <- tryCatch(
+    {
+      utils::unzip(path, exdir = tmp)
+      TRUE
+    },
+    error = function(e) FALSE, warning = function(w) FALSE
+  )
   if (!ok) return(list())
   docxml <- file.path(tmp, "word", "document.xml")
   if (!file.exists(docxml)) return(list())

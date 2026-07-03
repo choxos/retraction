@@ -39,7 +39,6 @@
     "covr",
     "knitr",
     "pdftools",
-    "RefManageR",
     "rmarkdown",
     "testthat",
     "withr"

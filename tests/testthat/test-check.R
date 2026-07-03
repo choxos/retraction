@@ -45,3 +45,19 @@ test_that("unknown source is rejected early", {
   expect_error(check_dois("10.1/x", sources = "does-not-exist", progress = FALSE),
                "Unknown source")
 })
+
+test_that("a failed source yields unchecked, not clean", {
+  withr::local_options(retraction.base_url = "https://127.0.0.1:1/x",
+                       retraction.max_tries = 1L)
+  r <- check_dois("10.1016/S0140-6736(97)11096-0", sources = "xera",
+                  resolve_ids = FALSE, progress = FALSE)
+  expect_equal(r$status, "unchecked")
+  expect_false(r$is_retracted)
+})
+
+test_that("check_refs rejects an unknown column name", {
+  expect_error(
+    check_refs(data.frame(x = 1), doi_col = "nope", progress = FALSE),
+    "not in"
+  )
+})

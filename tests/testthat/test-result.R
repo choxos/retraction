@@ -69,3 +69,17 @@ test_that("render_report writes HTML and Markdown", {
   md <- render_report(res, tempfile(fileext = ".md"), format = "md")
   expect_match(paste(readLines(md), collapse = "\n"), "Flagged citations")
 })
+
+test_that("reports are honest about unchecked and empty results", {
+  unchk <- new_retraction_result(list(make_row(id = "a", status = "unchecked")))
+  md <- render_report(unchk, tempfile(fileext = ".md"), format = "md")
+  expect_match(paste(readLines(md), collapse = " "), "could not be checked")
+
+  empt <- new_retraction_result(list())
+  md2 <- render_report(empt, tempfile(fileext = ".md"), format = "md")
+  expect_match(paste(readLines(md2), collapse = " "), "No references were found")
+
+  html <- render_report(unchk, tempfile(fileext = ".html"))
+  expect_no_match(paste(readLines(html), collapse = " "),
+                  "No retracted references were detected")
+})

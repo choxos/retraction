@@ -185,7 +185,13 @@ pmc_fetch_xml <- function(pmcid, cache = TRUE, overwrite = FALSE) {
 #' Extract the article's own DOI from a fetched JATS document.
 #' @noRd
 jats_article_doi <- function(doc) {
-  d <- tryCatch({ x <- doc; xml2::xml_ns_strip(x); x }, error = function(e) NULL)
+  d <- tryCatch(
+    {
+      xml2::xml_ns_strip(doc)
+      doc
+    },
+    error = function(e) NULL
+  )
   if (is.null(d)) return(NA_character_)
   normalize_doi(xml_text1(d, ".//article-meta//article-id[@pub-id-type='doi']"))
 }
@@ -237,15 +243,20 @@ check_pmc <- function(x, sources = getOption("retraction.sources", "xera"),
   arts <- vector("list", length(inputs))
   for (i in seq_along(inputs)) {
     r <- pmc_resolve(inputs[i])
-    doc <- if (!is.na(r$pmcid)) pmc_fetch_xml(r$pmcid, cache = cache) else NULL
-    refs_i <- if (!is.null(doc)) parse_jats_doc(doc, source_file = r$pmcid) else list()
-    is_oa <- length(refs_i) > 0L
-    if (is_oa) refs <- c(refs, refs_i)
+    resolved <- !is.na(r$pmcid)
+    doc <- if (resolved) pmc_fetch_xml(r$pmcid, cache = cache) else NULL
+    retrieved <- !is.null(doc)
+    refs_i <- if (retrieved) parse_jats_doc(doc, source_file = r$pmcid) else list()
+    if (length(refs_i)) refs <- c(refs, refs_i)
     adoi <- if (!is.na(r$doi)) r$doi
-            else if (!is.null(doc)) jats_article_doi(doc) else NA_character_
+            else if (retrieved) jats_article_doi(doc) else NA_character_
+    # Open access here means the full-text XML was retrieved. Resolution and
+    # retrieval are tracked separately so a resolution or network failure is not
+    # reported as "not open access".
     arts[[i]] <- list(
-      input = inputs[i], pmcid = r$pmcid %||% NA_character_,
-      doi = adoi, is_open_access = is_oa, n_references = length(refs_i)
+      input = inputs[i], pmcid = r$pmcid %||% NA_character_, doi = adoi,
+      resolved = resolved, retrieved = retrieved, is_open_access = retrieved,
+      n_references = length(refs_i)
     )
   }
 
@@ -264,8 +275,9 @@ check_pmc <- function(x, sources = getOption("retraction.sources", "xera"),
 #' Per-article open-access summary from a [check_pmc()] result
 #'
 #' @param x A `retraction_result` returned by [check_pmc()].
-#' @return A tibble with `input`, `pmcid`, `doi`, `is_open_access`,
-#'   `n_references`, and `n_retracted`.
+#' @return A tibble with `input`, `pmcid`, `doi`, `resolved` (a PMC article was
+#'   found), `retrieved` (its full text was fetched), `is_open_access` (equal to
+#'   `retrieved`), `n_references`, and `n_retracted`.
 #' @export
 pmc_articles <- function(x) {
   a <- attr(x, "articles")
@@ -275,6 +287,7 @@ pmc_articles <- function(x) {
 #' @noRd
 empty_articles <- function() {
   tibble::tibble(input = character(), pmcid = character(), doi = character(),
+                 resolved = logical(), retrieved = logical(),
                  is_open_access = logical(), n_references = integer(),
                  n_retracted = integer())
 }
@@ -283,6 +296,7 @@ empty_articles <- function() {
 articles_tibble <- function(arts, result) {
   if (!length(arts)) return(empty_articles())
   chr <- function(nm) vapply(arts, function(a) a[[nm]] %||% NA_character_, character(1))
+  lg <- function(nm) vapply(arts, function(a) isTRUE(a[[nm]]), logical(1))
   pmcid <- chr("pmcid")
   n_ret <- vapply(pmcid, function(id) {
     if (is.na(id)) return(0L)
@@ -290,7 +304,8 @@ articles_tibble <- function(arts, result) {
   }, integer(1))
   tibble::tibble(
     input = chr("input"), pmcid = pmcid, doi = chr("doi"),
-    is_open_access = vapply(arts, function(a) isTRUE(a$is_open_access), logical(1)),
+    resolved = lg("resolved"), retrieved = lg("retrieved"),
+    is_open_access = lg("is_open_access"),
     n_references = vapply(arts, function(a) as.integer(a$n_references %||% 0L), integer(1)),
     n_retracted = unname(n_ret)
   )
@@ -298,8 +313,8 @@ articles_tibble <- function(arts, result) {
 
 #' @noRd
 report_pmc <- function(articles, result) {
-  oa <- sum(articles$is_open_access)
   n <- nrow(articles)
+  oa <- sum(articles$is_open_access)
   cli::cli_h2("PubMed Central: {n} article{?s} checked")
   cli::cli_alert_info("{oa} open access, {n - oa} not available")
   for (i in seq_len(n)) {
@@ -307,8 +322,11 @@ report_pmc <- function(articles, result) {
     if (isTRUE(a$is_open_access)) {
       msg <- "{a$pmcid}: open access, {a$n_references} reference{?s}, {a$n_retracted} retracted"
       if (a$n_retracted > 0) cli::cli_alert_danger(msg) else cli::cli_alert_success(msg)
+    } else if (isTRUE(a$resolved)) {
+      cli::cli_alert_warning(
+        "{a$pmcid}: in PubMed Central, but the open-access full text was not retrievable")
     } else {
-      cli::cli_alert_warning("{a$input}: not available as open-access full text")
+      cli::cli_alert_warning("{a$input}: could not be resolved to a PubMed Central article")
     }
   }
   invisible()

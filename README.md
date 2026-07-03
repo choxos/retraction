@@ -34,8 +34,6 @@ pak::pak("choxos/retraction")
 library(retraction)
 
 # Check a manuscript, bibliography, or reference file.
-# Supported: .bib, .ris, .json (CSL), .xml (EndNote/JATS), .docx, .pdf,
-# and .Rmd/.qmd/.tex/.md/.txt/.html (DOIs are scraped from the text).
 result <- check_file("manuscript.Rmd")
 result
 
@@ -50,6 +48,17 @@ A result is a tidy tibble, one row per reference, with the retraction `status`,
 an `is_retracted` flag, a match `confidence`, the `retraction_date`,
 `days_since_retraction`, the `reason`, and which `sources` confirmed it. Printing
 it gives a compact summary and lists the flagged citations.
+
+## What it reads
+
+Two levels of parsing:
+
+- **Structured** (identifiers read from fields): BibTeX and BibLaTeX (`.bib`),
+  CSL-JSON (`.json`), RIS (`.ris`), EndNote XML, and JATS XML.
+- **DOI scraping** (DOIs found in the text): Word (`.docx`), PDF (`.pdf`, needs
+  the optional `pdftools` package), and text documents (`.Rmd`, `.qmd`, `.tex`,
+  `.md`, `.txt`, `.html`). In these formats, references that do not carry a DOI
+  in the text are not detected.
 
 ## PubMed Central articles
 
@@ -126,6 +135,13 @@ through [Crossref](https://gitlab.com/crossref/retraction-watch-data) and served
 by [XeraRetractionTracker](https://openscience.xera.ac/retractions). The optional
 Crossref and OpenAlex backends use their public APIs; OpenAlex's `is_retracted`
 flag is itself derived from Retraction Watch. See `LICENSE.note` for details.
+
+## Use of AI
+
+Parts of `retraction` were developed with the assistance of AI coding tools
+(Anthropic's Claude, via Claude Code), including code drafting, documentation,
+and test scaffolding. All AI-assisted output was reviewed, tested, and verified
+by the author, who is solely responsible for the package and its correctness.
 
 ## License
 

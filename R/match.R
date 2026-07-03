@@ -113,7 +113,6 @@ finalize_row <- function(ref, rec, ctx, doi_from_pmid = FALSE) {
   hit <- rec$hit
 
   status <- rec$status
-  if (!rec$matched && length(rec$checked) == 0L) status <- "unchecked"
 
   match_type <- hit$match_type %||% NA_character_
   matched_on <- hit$matched_on %||% NA_character_
@@ -127,9 +126,13 @@ finalize_row <- function(ref, rec, ctx, doi_from_pmid = FALSE) {
     confidence <- min(confidence, score_match("pmid_exact"))
   }
 
+  # A fuzzy title match is never asserted as retracted; it is reported as a
+  # "possible" match for the user to verify. Hard flags require an exact
+  # identifier or exact-metadata match above the confidence threshold.
   is_retracted <- isTRUE(rec$matched) &&
     status_is_flagged(status, flag_nature) &&
-    confidence >= min_confidence()
+    confidence >= min_confidence() &&
+    !identical(match_type, "title_fuzzy")
 
   rdate <- hit$retraction_date %||% as.Date(NA)
   days_since <- if (!is.na(rdate)) as.integer(Sys.Date() - rdate) else NA_integer_

@@ -66,3 +66,27 @@ test_that("strip_wrapping drops unbalanced brackets but keeps DOI parens", {
   expect_equal(strip_wrapping("10.1016/S0140-6736(97)11096-0"),
                "10.1016/S0140-6736(97)11096-0")
 })
+
+test_that("a DOI inside a Markdown link is not over-captured", {
+  tf <- tempfile(fileext = ".md")
+  writeLines("See [10.1234/abc](https://doi.org/10.1234/abc).", tf)
+  dois <- vapply(parse_text(tf), function(r) r$doi, character(1))
+  expect_true("10.1234/abc" %in% dois)
+  expect_false(any(grepl("[][(){}]", dois)))
+})
+
+test_that("parse_bib reads a BibLaTeX date field for the year", {
+  tf <- tempfile(fileext = ".bib")
+  writeLines(c("@article{k,", "  title = {T},", "  date = {2020-03-01},",
+               "  doi = {10.1/x}", "}"), tf)
+  refs <- parse_bib(tf)
+  expect_equal(refs[[1]]$year, 2020L)
+})
+
+test_that("parse_jats_doc scrapes a DOI from a mixed-citation text node", {
+  doc <- xml2::read_xml(paste0(
+    "<ref-list><ref><mixed-citation>Smith. Title. doi:10.7777/mixed. ",
+    "2020.</mixed-citation></ref></ref-list>"))
+  refs <- parse_jats_doc(doc, "x")
+  expect_equal(refs[[1]]$doi, "10.7777/mixed")
+})

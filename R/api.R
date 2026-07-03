@@ -7,10 +7,14 @@
 ## ---------------------------------------------------------------------------
 
 #' Search Xera by DOI (server-side substring, case-insensitive).
-#' @return A list of item lists (possibly empty).
+#'
+#' Returns `NULL` when the request itself fails (transport error or non-2xx), so
+#' callers can distinguish a failed lookup from a successful empty result (an
+#' empty `list()`).
 #' @noRd
 xera_search_doi <- function(doi, per_page = 100L) {
   res <- xera_get("search/advanced", list(doi = doi, per_page = per_page))
+  if (is.null(res)) return(NULL)
   pluck1(res, "items") %||% list()
 }
 

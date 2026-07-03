@@ -10,8 +10,9 @@ pmc_articles(x)
 \item{x}{A \code{retraction_result} returned by \code{\link[=check_pmc]{check_pmc()}}.}
 }
 \value{
-A tibble with \code{input}, \code{pmcid}, \code{doi}, \code{is_open_access},
-\code{n_references}, and \code{n_retracted}.
+A tibble with \code{input}, \code{pmcid}, \code{doi}, \code{resolved} (a PMC article was
+found), \code{retrieved} (its full text was fetched), \code{is_open_access} (equal to
+\code{retrieved}), \code{n_references}, and \code{n_retracted}.
 }
 \description{
 Per-article open-access summary from a \code{\link[=check_pmc]{check_pmc()}} result

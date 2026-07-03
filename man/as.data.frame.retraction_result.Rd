@@ -13,6 +13,9 @@
 
 \item{...}{Passed to \code{\link[base:as.data.frame]{base::as.data.frame()}}.}
 }
+\value{
+A base \link[base:data.frame]{data.frame}.
+}
 \description{
 Coerce a retraction result to a data frame.
 }

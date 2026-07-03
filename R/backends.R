@@ -213,9 +213,11 @@ backend_xera <- function(ref, ctx) {
     return(snapshot_hit(snap, ref, ctx) %||% new_hit("xera", 1L, checked = TRUE))
   }
 
-  # Online: exact DOI first.
+  # Online: exact DOI first. A NULL result means the request failed, which is
+  # not the same as a checked no-match.
   if (is_nonempty_string(ref$doi)) {
     items <- xera_search_doi(ref$doi)
+    if (is.null(items)) return(new_hit("xera", 1L, checked = FALSE))
     hit <- xera_items_to_hit(items, ref$doi)
     if (is.null(hit) && length(items)) hit <- xera_notice_hit(items, ref$doi)
     if (!is.null(hit)) return(xera_enrich_hit(hit))
@@ -225,6 +227,7 @@ backend_xera <- function(ref, ctx) {
   # Online fuzzy title (best-effort; the API only does substring search).
   if (isTRUE(ctx$allow_fuzzy) && is_nonempty_string(ref$title)) {
     res <- xera_get("search/advanced", list(q = ref$title, per_page = 50L))
+    if (is.null(res)) return(new_hit("xera", 1L, checked = FALSE))
     items <- pluck1(res, "items") %||% list()
     hit <- fuzzy_hit_from_items(items, ref)
     if (!is.null(hit)) return(hit)
@@ -245,18 +248,14 @@ crossref_verdict <- function(msg, doi) {
   evidence <- character(0)
   retracted <- FALSE
 
+  # Signals that this DOI is the retracted work itself. The `update-to` field is
+  # deliberately not used: it appears on the retraction notice pointing to the
+  # original, so keying on it would flag the notice DOI, not the retracted work.
   if (!is.na(title) && grepl("^\\s*retracted", title, ignore.case = TRUE)) {
     retracted <- TRUE; evidence <- c(evidence, "title_prefix")
   }
   if (!is.null(pluck1(msg, "relation", "is-retracted-by"))) {
     retracted <- TRUE; evidence <- c(evidence, "relation")
-  }
-  updates <- pluck1(msg, "update-to")
-  if (!is.null(updates)) {
-    types <- tolower(as_chr(lapply(updates, function(u) pluck1(u, "type"))))
-    if (any(grepl("retract|withdraw", types))) {
-      retracted <- TRUE; evidence <- c(evidence, "update_to")
-    }
   }
 
   if (!retracted) return(new_hit("crossref", 2L, checked = TRUE, title = title))
@@ -311,35 +310,51 @@ backend_openalex <- function(ref, ctx) {
 
 #' Merge per-backend hits for one reference into a single verdict.
 #'
-#' The highest-priority matched hit sets the headline status and metadata;
-#' every confirming source is recorded, and a disagreement flag is set when some
-#' consulted sources found a retraction and others did not.
+#' Rules, in order:
+#' 1. An authoritative clearing (a notice-DOI match or a reinstatement) means the
+#'    DOI is not a retracted work; that status stands, but a disagreement is
+#'    raised if another source flagged it.
+#' 2. Otherwise, if any source flagged the DOI (retraction or expression of
+#'    concern), that flag stands (highest-priority flagged hit sets the
+#'    metadata), with a disagreement raised if a consulted source did not confirm.
+#' 3. Otherwise, a non-flagged match (e.g. correction) sets the status.
+#' 4. With no match: `unchecked` if a selected source failed or none completed,
+#'    otherwise `none` (clean).
 #' @noRd
 reconcile_sources <- function(hits) {
   hits <- compact(hits)
+  by_priority <- function(hs) hs[order(vapply(hs, function(h) h$source_priority, numeric(1)))]
+  srcs <- function(hs) unique(vapply(hs, function(h) h$source, character(1)))
+
+  checked <- Filter(function(h) isTRUE(h$checked), hits)
+  checked_sources <- srcs(checked)
+  errored <- length(checked) < length(hits)
+
   matched <- Filter(function(h) isTRUE(h$matched), hits)
-  checked_sources <- vapply(Filter(function(h) isTRUE(h$checked), hits),
-                            function(h) h$source, character(1))
+  is_notice <- function(h) identical(h$matched_on, "retraction_doi")
+  cleared <- Filter(function(h) is_notice(h) || identical(h$status, "reinstated"), matched)
+  flagged <- Filter(function(h) status_is_flagged(h$status) && !is_notice(h), matched)
 
-  if (!length(matched)) {
-    return(list(
-      matched = FALSE, status = "none",
-      confirming = character(0), checked = checked_sources, disagreement = FALSE,
-      hit = NULL
-    ))
+  base <- list(checked = checked_sources, errored = errored)
+
+  if (length(cleared)) {
+    best <- by_priority(cleared)[[1L]]
+    return(c(list(matched = TRUE, status = best$status, confirming = srcs(matched),
+                  disagreement = length(flagged) > 0, hit = best), base))
   }
-
-  ord <- order(vapply(matched, function(h) h$source_priority, numeric(1)))
-  best <- matched[[ord[1L]]]
-  confirming <- vapply(matched, function(h) h$source, character(1))
-  # Disagreement: a flagged verdict, but at least one consulted source did not
-  # confirm it.
-  disagreement <- status_is_flagged(best$status) &&
-    length(setdiff(checked_sources, confirming)) > 0
-
-  list(
-    matched = TRUE, status = best$status,
-    confirming = unique(confirming), checked = unique(checked_sources),
-    disagreement = disagreement, hit = best
-  )
+  if (length(flagged)) {
+    best <- by_priority(flagged)[[1L]]
+    disagreement <- length(setdiff(checked_sources, srcs(flagged))) > 0
+    return(c(list(matched = TRUE, status = best$status, confirming = srcs(flagged),
+                  disagreement = disagreement, hit = best), base))
+  }
+  if (length(matched)) {
+    best <- by_priority(matched)[[1L]]
+    return(c(list(matched = TRUE, status = best$status, confirming = srcs(matched),
+                  disagreement = FALSE, hit = best), base))
+  }
+  list(matched = FALSE,
+       status = if (errored || !length(checked_sources)) "unchecked" else "none",
+       confirming = character(0), checked = checked_sources,
+       disagreement = FALSE, hit = NULL, errored = errored)
 }
